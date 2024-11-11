@@ -78,3 +78,59 @@ exports.upload_aboutusImg = multer({
   },
   limits: { fileSize: aboutusImgMaxSize },
 });
+
+// middleware for uploading the bannerImg
+const usersupportStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "./uploads/usersupport");
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
+
+const usersupportMaxSize = 30 * 1024 * 1024;
+exports.upload_usersupport = multer({
+  storage: usersupportStorage,
+  fileFilter: (req, file, cb) => {
+    if (
+      file.originalname.match(
+        /\.(png|PNG|JPG|jpg|pdf|jpeg|JPEG|tiff|TIFF|gif|GIF|bmp|BMP|eps|EPS)$/
+      )
+    ) {
+      cb(null, true);
+    } else {
+      cb(null, false);
+      return cb(new Error("This file extension is not allowed"));
+    }
+  },
+  limits: { fileSize: usersupportMaxSize },
+});
+
+// middleware for uploading the bannerImg
+const useruploadpostStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "./uploads/useruploadpost");
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
+
+const useruploadpostMaxSize = 30 * 1024 * 1024;
+exports.upload_useruploadpost = multer({
+  storage: useruploadpostStorage,
+  fileFilter: (req, file, cb) => {
+    if (
+      file.originalname.match(
+        /\.(png|PNG|JPG|jpg|pdf|jpeg|JPEG|tiff|TIFF|gif|GIF|bmp|BMP|eps|EPS)$/
+      )
+    ) {
+      cb(null, true);
+    } else {
+      cb(null, false);
+      return cb(new Error("This file extension is not allowed"));
+    }
+  },
+  limits: { fileSize: useruploadpostMaxSize },
+});

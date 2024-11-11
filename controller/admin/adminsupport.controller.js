@@ -32,13 +32,13 @@ exports.getQueries = async (req, res) => {
         condition = {
           $and: [
             { status: condition.status }, // Include status condition
-            { $or: [{ "user.name": regex }] }, // Include searchQuery condition
+            { $or: [{ "user.fullNameorCompanyName": regex }] }, // Include searchQuery condition
           ],
         };
       } else {
         // If no status is provided, only apply searchQuery
         condition = {
-          $or: [{ "user.name": regex }],
+          $or: [{ "user.fullNameorCompanyName": regex }],
         };
       }
     }
@@ -73,7 +73,7 @@ exports.getQueries = async (req, res) => {
           status: 1,
           logCreatedDate: 1,
           logModifiedDate: 1,
-          userName: "$user.name",
+          userName: "$user.fullNameorCompanyName",
           userEmail: "$user.email",
           userMobile: "$user.phone",
         },

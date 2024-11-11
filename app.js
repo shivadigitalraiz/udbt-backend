@@ -46,7 +46,7 @@ mongoose
 
 // to keep ruunung the server
 cron.schedule("0 */3 * * * *", () => {
-  console.log("Server running on port 5888");
+  console.log("Server running on port 6300");
 });
 
 // app.js main listner

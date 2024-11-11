@@ -51,4 +51,10 @@ userRoutes.post(
   authcontroller.changepassword
 );
 
+userRoutes.post(
+  "/deleteaccount",
+  verifyAdminToken,
+  authcontroller.deleteAccount
+);
+
 module.exports = userRoutes;

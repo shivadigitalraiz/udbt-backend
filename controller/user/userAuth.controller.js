@@ -209,14 +209,14 @@ exports.userRegistration = async function (req, res) {
 
     const existingUser = await userModel.findOne({ phone: req.body.phone });
 
-    // User unique ID generation logic
-    const latestUser = await userModel.findOne().sort({ userUniqueId: -1 });
-    const bookingNum =
-      latestUser && latestUser.userUniqueId
-        ? parseInt(latestUser.userUniqueId.substring(3)) + 1
-        : 1;
-    const cId = String(bookingNum).padStart(5, "0");
-    const userUniqueId = "USR" + cId;
+    // // User unique ID generation logic
+    // const latestUser = await userModel.findOne().sort({ userUniqueId: -1 });
+    // const bookingNum =
+    //   latestUser && latestUser.userUniqueId
+    //     ? parseInt(latestUser.userUniqueId.substring(3)) + 1
+    //     : 1;
+    // const cId = String(bookingNum).padStart(5, "0");
+    // const userUniqueId = "USR" + cId;
 
     if (existingUser) {
       console.log("Updating existing user information");
@@ -242,7 +242,7 @@ exports.userRegistration = async function (req, res) {
           interests: req.body.interests,
           logModifiedDate: logDate,
           status: "active",
-          userUniqueId: userUniqueId,
+          // userUniqueId: userUniqueId,
         },
         { new: true }
       );
@@ -264,8 +264,18 @@ exports.userRegistration = async function (req, res) {
       });
     }
 
+    // User unique ID generation logic
+    const latestUser = await userModel.findOne().sort({ userUniqueId: -1 });
+    const bookingNum =
+      latestUser && latestUser.userUniqueId
+        ? parseInt(latestUser.userUniqueId.substring(3)) + 1
+        : 1;
+    const cId = String(bookingNum).padStart(5, "0");
+    const userUniqueId = "USR" + cId;
+
     // New user registration
     const userObj = new userModel({
+      userUniqueId: userUniqueId,
       fullNameorCompanyName: req.body.fullNameorCompanyName,
       email: req.body.email,
       phone: req.body.phone,
@@ -407,8 +417,27 @@ exports.userLogin = async function (req, res) {
     // Find the user by email
     const user = await userModel.findOne({ email: email });
 
+    // if (!user) {
+    //   return res.status(400).json({ message: "User not found" });
+    // } else if (!user.status) {
+    //   return res.status(400).json({
+    //     message:
+    //       "Your account has been blocked by the admin, please contact support.",
+    //   });
+    // } else {
+    //   // Verify user's password using bcrypt
+    //   if (!user.password) {
+    //     return res.status(400).json({
+    //       message: "Please register",
+    //     });
+    //   }
+
     if (!user) {
       return res.status(400).json({ message: "User not found" });
+    } else if (user.isdeleted === "Yes") {
+      return res.status(400).json({
+        message: "Your account has been deleted",
+      });
     } else if (!user.status) {
       return res.status(400).json({
         message:
