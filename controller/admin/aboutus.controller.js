@@ -15,6 +15,7 @@ exports.getaboutus = async function (req, res) {
         title: "",
         image: "",
         description: "",
+        link: "",
         logCreatedDate: logDate,
         logModifiedDate: logDate,
       });
@@ -57,6 +58,7 @@ exports.editaboutus = async function (req, res) {
             ? req.files.image[0].path
             : console.log("No Img"),
           description: req.body.description,
+          link: req.body.link,
           logModifiedDate: logDate,
         },
       },

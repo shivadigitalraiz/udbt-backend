@@ -12,6 +12,10 @@ const aboutus = new mongoose.Schema({
     type: String,
     trim: true,
   },
+  link: {
+    type: String,
+    trim: true,
+  },
   logCreatedDate: {
     type: String,
     trim: true,

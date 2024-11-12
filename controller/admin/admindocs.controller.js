@@ -301,11 +301,29 @@ exports.GETUSERLISTBYID = async function (req, res) {
         },
       },
       {
+        $lookup: {
+          from: "likeposts", // Replace with your actual likes collection name
+          localField: "_id",
+          foreignField: "postId",
+          as: "likes",
+        },
+      },
+      {
+        $lookup: {
+          from: "commentposts",
+          localField: "_id",
+          foreignField: "postId",
+          as: "comments",
+        },
+      },
+      {
         $project: {
           date: 1,
           time: 1,
           image: 1,
           description: 1,
+          likeCount: { $size: "$likes" }, 
+          commentCount: { $size: "$comments" }, // Coun
         },
       },
     ]);
@@ -336,12 +354,30 @@ exports.GETUSERLISTBYID = async function (req, res) {
         },
       },
       {
+        $lookup: {
+          from: "likeposts",
+          localField: "postId",
+          foreignField: "postId",
+          as: "likes",
+        },
+      },
+      {
+        $lookup: {
+          from: "commentposts",
+          localField: "postId",
+          foreignField: "postId",
+          as: "comments",
+        },
+      },
+      {
         $project: {
           date: 1,
           time: 1,
           postId: 1,
           postImage: "$userpost.image",
           postDescription: "$userpost.description",
+          likeCount: { $size: "$likes" }, // Count of likes for each saved post
+          commentCount: { $size: "$comments" },
         },
       },
     ]);
@@ -446,6 +482,8 @@ exports.GETUSERLISTBYID = async function (req, res) {
           followerName: "$followerDetails.fullNameorCompanyName",
           followerEmail: "$followerDetails.email",
           followerCity: "$followerDetails.city",
+          followingPhone: "$followerDetails.phone",
+          followinguserUniqueId: "$followerDetails.userUniqueId",
           date: 1,
           time: 1,
           logCreatedDate: 1,
@@ -480,6 +518,8 @@ exports.GETUSERLISTBYID = async function (req, res) {
           followingName: "$followingDetails.fullNameorCompanyName",
           followingEmail: "$followingDetails.email",
           followingCity: "$followingDetails.city",
+          followingPhone: "$followingDetails.phone",
+          followinguserUniqueId: "$followingDetails.userUniqueId",
           date: 1,
           time: 1,
           logCreatedDate: 1,

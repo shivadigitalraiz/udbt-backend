@@ -587,8 +587,10 @@ exports.edituserProfile = async function (req, res) {
       designationorCompanytype: req.body.designationorCompanytype,
       link: req.body.link,
       city: req.body.city,
-      investements: JSON.parse(req.body.investements),
-      funds: JSON.parse(req.body.funds),
+      // investements: JSON.parse(req.body.investements),
+      // funds: JSON.parse(req.body.funds),
+      investements: req.body.investements,
+      funds: req.body.funds,
       about: req.body.about,
       profilePic: req.file ? req.file.path : console.log("No Img"),
       bio: req.body.bio,
@@ -618,7 +620,7 @@ exports.edituserProfile = async function (req, res) {
       });
     }
   } catch (err) {
-    console.error(err); // Log the error for debugging
+    console.log(err); // Log the error for debugging
     res.status(400).json({
       success: false,
       message: "Something went wrong",
@@ -825,3 +827,68 @@ exports.deleteAccount = async function (req, res) {
     res.status(400).json({ success: false, message: "Something went wrong" });
   }
 };
+
+
+// login otp using email
+// exports.sendOtpforemai = async function (req, res) {
+//   try {
+//     const { email } = req.body;
+
+//     // Set the current date in the IST timezone
+//     const istDateTime = DateTime.now().setZone("Asia/Kolkata");
+//     const logDate = istDateTime.toISO({ includeOffset: true });
+
+//     // Check if a user with the given email exists and is not marked as deleted
+//     let userData = await userModel.findOne({ email: email });
+
+//     if (userData) {
+//       // Check if the account is deleted
+//       if (userData.isdeleted !== "No") {
+//         return res.status(400).json({
+//           success: false,
+//           message: "This account has been deleted.",
+//         });
+//       }
+
+//       // Check if the user's account is active or inactive
+//       if (userData.status === "active" || userData.status === "inactive") {
+//         const otp = await generateOtp(userData);
+
+//         res.status(200).json({
+//           success: true,
+//           message: "OTP sent successfully",
+//           data: userData,
+//           otp: otp,
+//         });
+//       } else if (userData.status === "inactive") {
+//         res.status(400).json({
+//           success: false,
+//           message: "Your account is blocked. Please contact the support team.",
+//         });
+//       }
+//     } else {
+//       // Create a new user if no user is found with the given email
+//       const newUser = new userModel({
+//         email: email,
+//         name: "",
+//         status: "active",
+//         isdeleted: "No", // Set isdeleted as "No" for new users
+//         logCreatedDate: logDate,
+//       });
+//       userData = await newUser.save();
+//       const otp = await generateOtp(userData);
+
+//       res.status(200).json({
+//         success: true,
+//         message: "OTP sent successfully",
+//         data: userData,
+//         otp: otp,
+//       });
+//     }
+//   } catch (err) {
+//     console.log(err);
+//     return res
+//       .status(400)
+//       .json({ success: false, message: "Something went wrong" });
+//   }
+// };

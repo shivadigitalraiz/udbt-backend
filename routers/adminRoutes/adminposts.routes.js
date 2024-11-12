@@ -2,7 +2,7 @@ const express = require("express");
 const adminpostRoutes = express.Router();
 
 // controller
-const admindocsController = require("../../controller/admin/adminposts.controller");
+const adminpostsController = require("../../controller/admin/adminposts.controller");
 
 // middleware
 const { verifyAdminToken } = require("../../middleware/verifyToken");
@@ -12,21 +12,28 @@ const { verifyAdminToken } = require("../../middleware/verifyToken");
 adminpostRoutes.delete(
   "/deletepost/:id",
   verifyAdminToken,
-  admindocsController.deleteuseruploadedpostsbyadmin
+  adminpostsController.deleteuseruploadedpostsbyadmin
 );
 
 //get all active startus
 adminpostRoutes.post(
   "/getalluseruploadedposts",
   verifyAdminToken,
-  admindocsController.getalluserpostsforadmin
+  adminpostsController.getalluserpostsforadmin
 );
 
 //update support request
 adminpostRoutes.post(
-  "/getalldeletedpostsbyadmin",
+  "/getalldeletedpostsforadmin",
   verifyAdminToken,
-  admindocsController.getalluserdeletedpostsforadmin
+  adminpostsController.getalluserdeletedpostsforadmin
+);
+
+//get post by id
+adminpostRoutes.post(
+  "/getpostbyid",
+  verifyAdminToken,
+  adminpostsController.getuploadedpostbyuserforadmin
 );
 
 module.exports = adminpostRoutes;

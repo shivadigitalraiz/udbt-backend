@@ -41,11 +41,17 @@ const user = new mongoose.Schema({
     type: String,
     trim: true,
   },
+  // investements: {
+  //   type: Array,
+  // },
+  // funds: {
+  //   type: Array,
+  // },
   investements: {
-    type: Array,
+    type: String,
   },
   funds: {
-    type: Array,
+    type: String,
   },
   about: {
     type: String,

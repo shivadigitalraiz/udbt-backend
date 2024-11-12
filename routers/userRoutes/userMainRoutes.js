@@ -14,6 +14,7 @@ const usercommentpostRoutes = require("./usercommentposts.routes");
 const userfollwerrequestRoutes = require("./userfollowrequest.routes");
 const notificationRoutes = require("./notification.routes");
 const usersharedpostRoutes = require("./usersharedposts.routes");
+const userDocRoutes = require("./userDocs.routes");
 
 /*************** APi's for the above **************/
 userRoute.use("/auth", authRoutes);
@@ -25,18 +26,10 @@ userRoute.use("/commentposts", usercommentpostRoutes);
 userRoute.use("/followrequest", userfollwerrequestRoutes);
 userRoute.use("/notification", notificationRoutes);
 userRoute.use("/sharedposts", usersharedpostRoutes);
+userRoute.use("/userdoc", userDocRoutes);
 
 //single doc controller
-const userDocsController = require("../../controller/user/userDocs.controller");
 
 //single doc routes for the above controllers
-userRoute.use("/getpolicies", userDocsController.getPolicies);
-
-//get all posts for home screen
-userRoute.post(
-  "/getallposts",
-  verifyAdminToken,
-  userDocsController.getalluploadedpostsbyall
-);
 
 module.exports = userRoute;

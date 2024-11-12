@@ -24,7 +24,7 @@ admindocsRoutes.post(
 
 //update support request
 admindocsRoutes.put(
-  "/updateusersupport/:id",
+  "/blockorunblock",
   verifyAdminToken,
   admindocsController.userStatusUpdate
 );
@@ -35,4 +35,5 @@ admindocsRoutes.post(
   verifyAdminToken,
   admindocsController.GETUSERLISTBYID
 );
+
 module.exports = admindocsRoutes;
