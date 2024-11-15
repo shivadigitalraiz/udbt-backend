@@ -28,7 +28,7 @@ userRoutes.post(
 userRoutes.put(
   "/usereditprofile",
   verifyAdminToken,
-  upload_userImg.single("profilePic"),
+ // upload_userImg.single("profilePic"),
   authcontroller.edituserProfile
 );
 
@@ -55,6 +55,22 @@ userRoutes.post(
   "/deleteaccount",
   verifyAdminToken,
   authcontroller.deleteAccount
+);
+
+userRoutes.put(
+  "/updateintrests",
+  verifyAdminToken,
+  authcontroller.updateinstrestsforuser
+);
+
+userRoutes.post("/sendotp", authcontroller.sendOtpforemail);
+
+
+userRoutes.put(
+  "/updateprofile",
+  verifyAdminToken,
+  upload_userImg.single("profilePic"),
+  authcontroller.updateprofilepicforuser
 );
 
 module.exports = userRoutes;

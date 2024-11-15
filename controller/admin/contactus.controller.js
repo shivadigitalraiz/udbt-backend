@@ -17,8 +17,8 @@ exports.getcontactus = async function (req, res) {
         email: "",
         fromTime: "",
         toTime: "",
-
-         description: "",
+        image: "",
+        description: "",
         alternatePhone: "",
         logCreatedDate: logDate,
         logModifiedDate: logDate,
@@ -62,6 +62,7 @@ exports.editcontactus = async function (req, res) {
           description: req.body.description,
           //
           alternatePhone: req.body.alternatePhone,
+          image: req.file ? req.file.path : console.log("No Img"),
           logModifiedDate: logDate,
         },
       },

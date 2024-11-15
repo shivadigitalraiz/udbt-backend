@@ -13,8 +13,39 @@ exports.adduseruploadposts = async function (req, res) {
 
     const user = await userModel.findOne({ _id: req.userId });
 
+    // // User unique ID generation logic
+    // const latestUser = await userPostsModel
+    //   .findOne()
+    //   .sort({ postUniqueId: -1 });
+    // const bookingNum =
+    //   latestUser && latestUser.postUniqueId
+    //     ? parseInt(latestUser.postUniqueId.substring(3)) + 1
+    //     : 1;
+    // const cId = String(bookingNum).padStart(5, "0");
+    // const postUniqueId = "POST" + cId;
+
+    // User unique ID generation logic
+    const latestUser = await userPostsModel
+      .findOne()
+      .sort({ postUniqueId: -1 });
+    let bookingNum = 1;
+
+    if (
+      latestUser &&
+      latestUser.postUniqueId &&
+      latestUser.postUniqueId.startsWith("POST")
+    ) {
+      // Extract the numeric part after "POST" and increment
+      const lastNumber = parseInt(latestUser.postUniqueId.substring(4), 10);
+      bookingNum = lastNumber + 1;
+    }
+
+    const cId = String(bookingNum).padStart(5, "0"); // Pad the number to 5 digits
+    const postUniqueId = "POST" + cId;
+
     const userPostObj = new userPostsModel({
       date: logDate.slice(0, 10),
+      postUniqueId: postUniqueId,
       time,
       description: req.body.description,
       image: req.file ? req.file.path : "",
@@ -147,4 +178,3 @@ exports.deleteuseruploadedposts = async function (req, res) {
     res.status(400).json({ success: false, message: "Something went wrong" });
   }
 };
- 

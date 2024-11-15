@@ -29,6 +29,10 @@ const contactus = new mongoose.Schema({
     trim: true,
     default: "",
   },
+  image: {
+    type: String,
+    trim: true,
+  },
   logCreatedDate: {
     type: String,
   },

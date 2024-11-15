@@ -9,7 +9,7 @@ const { verifyAdminToken } = require("../../middleware/verifyToken");
 
 // routes
 //get all active investors
-adminpostRoutes.delete(
+adminpostRoutes.put(
   "/deletepost/:id",
   verifyAdminToken,
   adminpostsController.deleteuseruploadedpostsbyadmin

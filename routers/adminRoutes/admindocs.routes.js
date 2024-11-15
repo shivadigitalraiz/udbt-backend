@@ -36,4 +36,19 @@ admindocsRoutes.post(
   admindocsController.GETUSERLISTBYID
 );
 
+//get blocked user || either investors or startups
+admindocsRoutes.post(
+  "/getallbloackedusers",
+  verifyAdminToken,
+  admindocsController.getallblockedusersforadmin
+);
+
+//
+//get blocked user || either investors or startups
+admindocsRoutes.post(
+  "/getallusers",
+  verifyAdminToken,
+  admindocsController.getallusersforadmin
+);
+
 module.exports = admindocsRoutes;

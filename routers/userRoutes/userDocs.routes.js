@@ -32,4 +32,10 @@ userDocRoutes.post(
   userDocsController.getallstartupsforuser
 );
 
+userDocRoutes.post(
+  "/getuserbyid",
+  verifyAdminToken,
+  userDocsController.GETUSERLISTBYID
+);
+
 module.exports = userDocRoutes;

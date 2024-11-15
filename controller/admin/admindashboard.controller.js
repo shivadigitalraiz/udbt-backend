@@ -84,7 +84,7 @@ exports.getDashboardata = async function (req, res) {
         },
       },
       {
-        $count: "totalInvestorPosts",
+        $count: "totalStartupPosts",
       },
     ]);
 
@@ -164,6 +164,7 @@ exports.getDashboardata = async function (req, res) {
     const currentYear = new Date().getFullYear();
     const nextYear = currentYear + 1;
 
+    /*
     //monthly Investors
     const monthlyInvestors = await Promise.all(
       months.map(async (month) => {
@@ -232,6 +233,7 @@ exports.getDashboardata = async function (req, res) {
       monthlyStartups
     );
 
+    */
     // Getting today's counts
     const today = new Date();
     const todayStart = new Date(
@@ -278,6 +280,8 @@ exports.getDashboardata = async function (req, res) {
             $gte: todayStart,
             $lt: todayEnd,
           },
+          isdeleted: "No",
+          isblocked: false,
         },
       },
       {
@@ -287,7 +291,7 @@ exports.getDashboardata = async function (req, res) {
           foreignField: "_id",
           as: "userDetails",
         },
-      }, 
+      },
       {
         $unwind: "$userDetails",
       },
@@ -331,12 +335,12 @@ exports.getDashboardata = async function (req, res) {
       },
       {
         $match: {
-          "userDetails.isStartupOrInvestor": "investor",
+          "userDetails.isStartupOrInvestor": "startup",
           "userDetails.status": "active",
         },
       },
       {
-        $count: "totalInvestorPostsToday",
+        $count: "totalStartuprPostsToday",
       },
     ]);
 
@@ -366,8 +370,8 @@ exports.getDashboardata = async function (req, res) {
       latestinvestors,
       latestStartups,
       //monthly
-      monthlyInvestors,
-      monthlyStartups,
+      //monthlyInvestors,
+      //monthlyStartups,
     });
   } catch (err) {
     console.log(err);

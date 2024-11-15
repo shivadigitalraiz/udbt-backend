@@ -41,18 +41,17 @@ const user = new mongoose.Schema({
     type: String,
     trim: true,
   },
-  // investements: {
-  //   type: Array,
-  // },
-  // funds: {
-  //   type: Array,
-  // },
+
+  //------ for investments -------- //
   investements: {
     type: String,
+    default: "",
   },
   funds: {
     type: String,
+    default: "",
   },
+  //------ for investments -------- //
   about: {
     type: String,
     trim: true,
@@ -63,7 +62,7 @@ const user = new mongoose.Schema({
   },
   fcmtoken: {
     type: String,
-    trim: true,
+    trim: true, 
   },
   notification_bell: {
     type: Boolean,
@@ -73,10 +72,6 @@ const user = new mongoose.Schema({
     type: String,
     default: "",
   },
-  // isStartupOrInvestor: {
-  //   type: Boolean,
-  //   default: false,
-  // },
   isStartupOrInvestor: {
     type: String,
     enum: ["investor", "startup"],
@@ -86,7 +81,7 @@ const user = new mongoose.Schema({
     enum: ["active", "inactive"],
     default: "active",
   },
-  //
+  //------ for startup -------- //
   founded: {
     type: String,
     trim: true,
@@ -97,6 +92,7 @@ const user = new mongoose.Schema({
     trim: true,
     default: "",
   },
+  //------ for startup -------- //
   interests: {
     type: Array,
   },

@@ -74,46 +74,46 @@ exports.addFollower = async function (req, res) {
 };
 
 //get all follow requests
-exports.getalluserfollowers = async function (req, res) {
-  try {
-    const condition = { followerId: req.userId };
-    console.log(condition);
+// exports.getalluserfollowers = async function (req, res) {
+//   try {
+//     const condition = { followerId: req.userId };
+//     console.log(condition);
 
-    // Fetch all follow requests for the user
-    const followRequests = await userFollowersModel.find(condition).sort({
-      logCreatedDate: -1,
-    });
+//     // Fetch all follow requests for the user
+//     const followRequests = await userFollowersModel.find(condition).sort({
+//       logCreatedDate: -1,
+//     });
 
-    // Fetch only the follow requests where followRequest is "requested"
-    const requestedfollowrequests = await userFollowersModel
-      .find({
-        ...condition,
-        followRequest: "requested",
-      })
-      .sort({ logCreatedDate: -1 });
+//     // Fetch only the follow requests where followRequest is "requested"
+//     const requestedfollowrequests = await userFollowersModel
+//       .find({
+//         ...condition,
+//         followRequest: "requested",
+//       })
+//       .sort({ logCreatedDate: -1 });
 
-    // Fetch only the follow requests where followRequest is "requested"
-    const acceptedfollowrequests = await userFollowersModel
-      .find({
-        ...condition,
-        followRequest: "accepted",
-      })
-      .sort({ logCreatedDate: -1 });
+//     // Fetch only the follow requests where followRequest is "requested"
+//     const acceptedfollowrequests = await userFollowersModel
+//       .find({
+//         ...condition,
+//         followRequest: "accepted",
+//       })
+//       .sort({ logCreatedDate: -1 });
 
-    if (followRequests) {
-      res.status(200).json({
-        success: true,
-        message: "Follow Requests have been retrieved successfully",
-        followRequests: followRequests,
-        requestedfollowrequests: requestedfollowrequests,
-        acceptedfollowrequests: acceptedfollowrequests,
-      });
-    }
-  } catch (err) {
-    console.log(err);
-    res.status(400).json({ message: "Something went wrong" });
-  }
-};
+//     if (followRequests) {
+//       res.status(200).json({
+//         success: true,
+//         message: "Follow Requests have been retrieved successfully",
+//         followRequests: followRequests,
+//         requestedfollowrequests: requestedfollowrequests,
+//         acceptedfollowrequests: acceptedfollowrequests,
+//       });
+//     }
+//   } catch (err) {
+//     console.log(err);
+//     res.status(400).json({ message: "Something went wrong" });
+//   }
+// };
 
 //accept follow request
 exports.acceptfollowrequest = async function (req, res) {
@@ -178,5 +178,164 @@ exports.deletefollowrequests = async function (req, res) {
   } catch (err) {
     console.log(err);
     res.status(400).json({ success: false, message: "Something went wrong" });
+  }
+};
+
+//----------------------------------------------------------------------//
+exports.getalluserfollowers = async function (req, res) {
+  try {
+    // let condition = {};
+
+    // console.log(condition);
+
+    // Fetch all follow requests for the user with user details
+    const allrequests = await userFollowersModel.aggregate([
+      {
+        $lookup: {
+          from: "users",
+          localField: "followingId",
+          foreignField: "_id",
+          as: "userDetails",
+        },
+      },
+      {
+        $unwind: {
+          path: "$userDetails",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $match: {
+          // ...condition,
+          followerId: new mongoose.Types.ObjectId(req.userId),
+        },
+      },
+      {
+        $project: {
+          date: 1,
+          time: 1,
+          logCreatedDate: 1,
+          followerId: 1,
+          followerName: 1,
+          followingId: 1,
+          followRequest: 1,
+          logCreatedDate: 1,
+          logModifiedDate: 1,
+          userName: "$userDetails.fullNameorCompanyName",
+          userEmail: "$userDetails.email",
+          userPhone: "$userDetails.phone",
+          userCity: "$userDetails.city",
+          userProfilePic: "$userDetails.profilePic",
+        },
+      },
+      { $sort: { logCreatedDate: -1 } },
+    ]);
+
+    const allrequestsCount = allrequests.length;
+
+    const requestedfollowers = await userFollowersModel.aggregate([
+      {
+        $lookup: {
+          from: "users",
+          localField: "followingId",
+          foreignField: "_id",
+          as: "userDetails",
+        },
+      },
+      {
+        $unwind: {
+          path: "$userDetails",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $match: {
+          // ...condition,
+          followRequest: "requested",
+          followerId: new mongoose.Types.ObjectId(req.userId),
+        },
+      },
+      {
+        $project: {
+          date: 1,
+          time: 1,
+          logCreatedDate: 1,
+          followerId: 1,
+          followerName: 1,
+          followingId: 1,
+          followRequest: 1,
+          logCreatedDate: 1,
+          logModifiedDate: 1,
+          userName: "$userDetails.fullNameorCompanyName",
+          userEmail: "$userDetails.email",
+          userPhone: "$userDetails.phone",
+          userCity: "$userDetails.city",
+          userProfilePic: "$userDetails.profilePic",
+        },
+      },
+      { $sort: { logCreatedDate: -1 } },
+    ]);
+
+    const requestedfollowersCount = requestedfollowers.length;
+
+    const acceptedfollowers = await userFollowersModel.aggregate([
+      {
+        $lookup: {
+          from: "users",
+          localField: "followingId",
+          foreignField: "_id",
+          as: "userDetails",
+        },
+      },
+      {
+        $unwind: {
+          path: "$userDetails",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $match: {
+          // ...condition,
+          followRequest: "accepted",
+          followerId: new mongoose.Types.ObjectId(req.userId),
+        },
+      },
+      {
+        $project: {
+          date: 1,
+          time: 1,
+          logCreatedDate: 1,
+          followerId: 1,
+          followerName: 1,
+          followingId: 1,
+          followRequest: 1,
+          logCreatedDate: 1,
+          logModifiedDate: 1,
+          userName: "$userDetails.fullNameorCompanyName",
+          userEmail: "$userDetails.email",
+          userPhone: "$userDetails.phone",
+          userCity: "$userDetails.city",
+          userProfilePic: "$userDetails.profilePic",
+        },
+      },
+      { $sort: { logCreatedDate: -1 } },
+    ]);
+
+    const acceptedfollowersCount = acceptedfollowers.length;
+
+    return res.status(200).json({
+      success: true,
+      message: "Data retrived successfully",
+      allrequests,
+      requestedfollowers,
+      acceptedfollowers,
+      //counbts
+      allrequestsCount,
+      requestedfollowersCount,
+      acceptedfollowersCount,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(400).json({ message: "Something went wrong" });
   }
 };

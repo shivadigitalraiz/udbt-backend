@@ -321,12 +321,15 @@ exports.GETUSERLISTBYID = async function (req, res) {
           date: 1,
           time: 1,
           image: 1,
+          postUniqueId: 1,
           description: 1,
-          likeCount: { $size: "$likes" }, 
+          likeCount: { $size: "$likes" },
           commentCount: { $size: "$comments" }, // Coun
         },
       },
     ]);
+
+    const uploadedPostsCount = userUploadedposts.length;
 
     const usersavedposts = await savePostsModel.aggregate([
       {
@@ -375,12 +378,15 @@ exports.GETUSERLISTBYID = async function (req, res) {
           time: 1,
           postId: 1,
           postImage: "$userpost.image",
+          postUniqueId: "$userpost.postUniqueId",
           postDescription: "$userpost.description",
           likeCount: { $size: "$likes" }, // Count of likes for each saved post
           commentCount: { $size: "$comments" },
         },
       },
     ]);
+
+    const savedPostsCount = usersavedposts.length;
 
     const userlikeposts = await userLikesModel.aggregate([
       {
@@ -491,6 +497,9 @@ exports.GETUSERLISTBYID = async function (req, res) {
       },
     ]);
 
+    // Get the count of userFollowers
+    const userFollowersCount = userFollowers.length;
+
     const userFollowings = await followersModel.aggregate([
       {
         $match: {
@@ -527,6 +536,9 @@ exports.GETUSERLISTBYID = async function (req, res) {
       },
     ]);
 
+    // Get the count of userFollowers
+    const userFollowingsCount = userFollowings.length;
+
     res.status(200).json({
       success: true,
       message: "Data have been retrieved successfully",
@@ -537,9 +549,225 @@ exports.GETUSERLISTBYID = async function (req, res) {
       usercommentedposts,
       userFollowers,
       userFollowings,
+      //counts
+      userFollowersCount,
+      userFollowingsCount,
+      uploadedPostsCount,
+      savedPostsCount,
     });
   } catch (err) {
     console.log(err);
     res.status(400).json({ success: false, message: "Something went wrong" });
+  }
+};
+
+//get blocked user || either investors or startups
+exports.getallblockedusersforadmin = async function (req, res) {
+  try {
+    let condition = {
+      status: "inactive",
+      //isStartupOrInvestor: "investor",
+      isdeleted: "No",
+    };
+
+    const { fromDate, toDate } = req.body;
+
+    if (req.query.searchQuery && req.query.searchQuery !== "") {
+      let regex = new RegExp(req.query.searchQuery, "i");
+
+      condition.$or = [{ fullNameorCompanyName: regex }, { phone: regex }];
+    }
+
+    var dates = req.body.logCreatedDate;
+
+    // Utility function to validate date format (YYYY-MM-DD)
+    function isValidDate(dateString) {
+      const regex = /^\d{4}-\d{2}-\d{2}$/;
+      return regex.test(dateString);
+    }
+
+    // Ensure dates are valid and properly formatted
+    if (Array.isArray(dates) && dates.length > 0) {
+      if (dates.length > 1 && isValidDate(dates[0]) && isValidDate(dates[1])) {
+        condition.logCreatedDate = {
+          $gte: new Date(dates[0] + "T00:00:00.000Z").toISOString(),
+          $lte: new Date(dates[1] + "T23:59:59.999Z").toISOString(),
+        };
+      } else if (dates.length === 1 && isValidDate(dates[0])) {
+        condition.logCreatedDate = {
+          $gte: new Date(dates[0] + "T00:00:00.000Z").toISOString(),
+          $lte: new Date(dates[0] + "T23:59:59.999Z").toISOString(),
+        };
+      }
+    }
+
+    if (
+      fromDate !== "" &&
+      toDate !== "" &&
+      isValidDate(fromDate) &&
+      isValidDate(toDate)
+    ) {
+      if (fromDate === toDate) {
+        // If fromDate and toDate are the same, filter for a single date
+        condition.logCreatedDate = {
+          $gte: new Date(fromDate + "T00:00:00.000Z").toISOString(),
+          $lte: new Date(toDate + "T23:59:59.999Z").toISOString(),
+        };
+      } else {
+        // If fromDate and toDate are different, filter for a date range
+        condition.logCreatedDate = {
+          $gte: new Date(fromDate + "T00:00:00.000Z").toISOString(),
+          $lte: new Date(toDate + "T23:59:59.999Z").toISOString(),
+        };
+      }
+    }
+
+    const user = await userModel.aggregate([
+      {
+        $match: {
+          ...condition,
+        },
+      },
+
+      {
+        $sort: {
+          logCreatedDate: -1,
+        },
+      },
+    ]);
+
+    let userExcell = [];
+    user.map((val) => {
+      let obj = {
+        logCreatedDate: val.logCreatedDate,
+        userUniqueId: val.userUniqueId,
+        fullNameorCompanyName: val.fullNameorCompanyName,
+        phone: val.phone,
+        city: val.city,
+        investements: val.investements,
+        designationorCompanytype: val.designationorCompanytype,
+        funds: val.funds,
+        email: val.email,
+        bio: val.bio,
+        about: val.about,
+      };
+
+      userExcell.push(obj);
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Data have been retrieved successfully",
+      user: user,
+      userExcell,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(400).json({ succcess: false, message: "Something went wrong" });
+  }
+};
+
+//
+exports.getallusersforadmin = async function (req, res) {
+  try {
+    let condition = {
+      status: "active",
+      isdeleted: "No",
+    };
+
+    const { fromDate, toDate } = req.body;
+
+    if (req.query.searchQuery && req.query.searchQuery !== "") {
+      let regex = new RegExp(req.query.searchQuery, "i");
+
+      condition.$or = [{ fullNameorCompanyName: regex }, { phone: regex }];
+    }
+
+    var dates = req.body.logCreatedDate;
+
+    // Utility function to validate date format (YYYY-MM-DD)
+    function isValidDate(dateString) {
+      const regex = /^\d{4}-\d{2}-\d{2}$/;
+      return regex.test(dateString);
+    }
+
+    // Ensure dates are valid and properly formatted
+    if (Array.isArray(dates) && dates.length > 0) {
+      if (dates.length > 1 && isValidDate(dates[0]) && isValidDate(dates[1])) {
+        condition.logCreatedDate = {
+          $gte: new Date(dates[0] + "T00:00:00.000Z").toISOString(),
+          $lte: new Date(dates[1] + "T23:59:59.999Z").toISOString(),
+        };
+      } else if (dates.length === 1 && isValidDate(dates[0])) {
+        condition.logCreatedDate = {
+          $gte: new Date(dates[0] + "T00:00:00.000Z").toISOString(),
+          $lte: new Date(dates[0] + "T23:59:59.999Z").toISOString(),
+        };
+      }
+    }
+
+    if (
+      fromDate !== "" &&
+      toDate !== "" &&
+      isValidDate(fromDate) &&
+      isValidDate(toDate)
+    ) {
+      if (fromDate === toDate) {
+        // If fromDate and toDate are the same, filter for a single date
+        condition.logCreatedDate = {
+          $gte: new Date(fromDate + "T00:00:00.000Z").toISOString(),
+          $lte: new Date(toDate + "T23:59:59.999Z").toISOString(),
+        };
+      } else {
+        // If fromDate and toDate are different, filter for a date range
+        condition.logCreatedDate = {
+          $gte: new Date(fromDate + "T00:00:00.000Z").toISOString(),
+          $lte: new Date(toDate + "T23:59:59.999Z").toISOString(),
+        };
+      }
+    }
+
+    const user = await userModel.aggregate([
+      {
+        $match: {
+          ...condition,
+        },
+      },
+
+      {
+        $sort: {
+          logCreatedDate: -1,
+        },
+      },
+    ]);
+
+    let userExcell = [];
+    user.map((val) => {
+      let obj = {
+        logCreatedDate: val.logCreatedDate,
+        userUniqueId: val.userUniqueId,
+        fullNameorCompanyName: val.fullNameorCompanyName,
+        phone: val.phone,
+        city: val.city,
+        investements: val.investements,
+        designationorCompanytype: val.designationorCompanytype,
+        funds: val.funds,
+        email: val.email,
+        bio: val.bio,
+        about: val.about,
+      };
+
+      userExcell.push(obj);
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Data have been retrieved successfully",
+      user: user,
+      userExcell,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(400).json({ succcess: false, message: "Something went wrong" });
   }
 };

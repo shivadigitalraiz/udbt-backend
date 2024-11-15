@@ -1,5 +1,9 @@
 const mongoose = require("mongoose");
 const userPost = new mongoose.Schema({
+  postUniqueId: {
+    type: String,
+    trim: true,
+  },
   date: {
     type: String,
     trim: true,
@@ -29,26 +33,26 @@ const userPost = new mongoose.Schema({
     default: "",
   },
 
-  isSaved: {
-    type: Boolean,
-    default: false,
-  },
+  // isSaved: {
+  //   type: Boolean,
+  //   default: false,
+  // },
   // isDelete: {
   //   type: Boolean,
   //   default: false,
   // },
-  sharedUsers: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "users",
-    },
-  ],
-  likedUsers: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "users",
-    },
-  ],
+  // sharedUsers: [
+  //   {
+  //     type: mongoose.Schema.Types.ObjectId,
+  //     ref: "users",
+  //   },
+  // ],
+  // likedUsers: [
+  //   {
+  //     type: mongoose.Schema.Types.ObjectId,
+  //     ref: "users",
+  //   },
+  // ],
 
   logCreatedDate: {
     type: String,
@@ -60,6 +64,18 @@ const userPost = new mongoose.Schema({
     type: String,
     enum: ["Yes", "No"],
     default: "No",
+  },
+  isblocked: {
+    type: Boolean,
+    default: false,
+  },
+  postBlockedReason: {
+    type: String,
+    trim: true,
+  },
+  deletedBy: {
+    type: String,
+    trim: true,
   },
 });
 module.exports = mongoose.model("userPosts", userPost);

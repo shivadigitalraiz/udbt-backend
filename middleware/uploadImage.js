@@ -134,3 +134,31 @@ exports.upload_useruploadpost = multer({
   },
   limits: { fileSize: useruploadpostMaxSize },
 });
+
+// middleware for uploading the contactusImg
+const contactusImgStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "./uploads/contactusImg");
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
+
+const contactusImgMaxSize = 30 * 1024 * 1024;
+exports.upload_contactusImg = multer({
+  storage: contactusImgStorage,
+  fileFilter: (req, file, cb) => {
+    if (
+      file.originalname.match(
+        /\.(png|PNG|JPG|jpg|pdf|jpeg|JPEG|tiff|TIFF|gif|GIF|bmp|BMP|eps|EPS)$/
+      )
+    ) {
+      cb(null, true);
+    } else {
+      cb(null, false);
+      return cb(new Error("This file extension is not allowed"));
+    }
+  },
+  limits: { fileSize: contactusImgMaxSize },
+});

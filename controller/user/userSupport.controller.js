@@ -31,7 +31,7 @@ exports.addusersupport = async function (req, res) {
       image: req.file ? req.file.path : "",
       reply: req.body.reply,
       reason: req.body.reason,
-      userId: req.userId,
+      userId: req.userId,   
       userName: user ? user.name : "",
       status: req.body.status,
       logCreatedDate: logDate,
@@ -159,3 +159,5 @@ exports.deleteusersupport = async function (req, res) {
     res.status(400).json({ success: "false", message: "Something went wrong" });
   }
 };
+
+
