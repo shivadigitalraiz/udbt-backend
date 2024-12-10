@@ -15,12 +15,24 @@ exports.getQueries = async (req, res) => {
 
     const searchQuery = req.query.searchQuery || req.body.searchQuery;
 
-    // // Check if searchQuery is not empty and build the condition
+    // If searchQuery is provided, build the regex condition
     // if (searchQuery) {
     //   const regex = new RegExp(searchQuery, "i");
-    //   condition = {
-    //     $or: [{ "user.name": regex }],
-    //   };
+
+    //   // Use $and to combine both conditions
+    //   if (condition.status) {
+    //     condition = {
+    //       $and: [
+    //         { status: condition.status }, // Include status condition
+    //         { $or: [{ "user.fullNameorCompanyName": regex }] }, // Include searchQuery condition
+    //       ],
+    //     };
+    //   } else {
+    //     // If no status is provided, only apply searchQuery
+    //     condition = {
+    //       $or: [{ "user.fullNameorCompanyName": regex }],
+    //     };
+    //   }
     // }
 
     // If searchQuery is provided, build the regex condition
@@ -28,18 +40,30 @@ exports.getQueries = async (req, res) => {
       const regex = new RegExp(searchQuery, "i");
 
       // Use $and to combine both conditions
+      const searchCondition = {
+        $or: [
+          { date: regex },
+          { time: regex },
+          { ticketId: regex },
+          { title: regex },
+          { reason: regex },
+          { reply: regex },
+          { description: regex },
+          { "user.email": regex },
+          { "user.phone": regex },
+        ],
+      };
+
       if (condition.status) {
         condition = {
           $and: [
             { status: condition.status }, // Include status condition
-            { $or: [{ "user.fullNameorCompanyName": regex }] }, // Include searchQuery condition
+            searchCondition, // Include searchQuery condition
           ],
         };
       } else {
         // If no status is provided, only apply searchQuery
-        condition = {
-          $or: [{ "user.fullNameorCompanyName": regex }],
-        };
+        condition = searchCondition;
       }
     }
 

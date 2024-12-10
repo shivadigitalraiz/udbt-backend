@@ -22,7 +22,16 @@ exports.getallactiveinvestors = async function (req, res) {
     if (req.query.searchQuery && req.query.searchQuery !== "") {
       let regex = new RegExp(req.query.searchQuery, "i");
 
-      condition.$or = [{ fullNameorCompanyName: regex }, { phone: regex }];
+      condition.$or = [
+        { fullNameorCompanyName: regex },
+        { phone: regex },
+        { email: regex },
+        { city: regex },
+        { designationorCompanytype: regex },
+        { interests: regex },
+        { userUniqueId: regex },
+        { logCreatedDate: regex },
+      ];
     }
 
     var dates = req.body.logCreatedDate;
@@ -128,7 +137,16 @@ exports.getallactivestartups = async function (req, res) {
     if (req.query.searchQuery && req.query.searchQuery !== "") {
       let regex = new RegExp(req.query.searchQuery, "i");
 
-      condition.$or = [{ fullNameorCompanyName: regex }, { phone: regex }];
+      condition.$or = [
+        { fullNameorCompanyName: regex },
+        { phone: regex },
+        { email: regex },
+        { city: regex },
+        { designationorCompanytype: regex },
+        { interests: regex },
+        { userUniqueId: regex },
+        { logCreatedDate: regex },
+      ];
     }
 
     var dates = req.body.logCreatedDate;
@@ -384,6 +402,18 @@ exports.GETUSERLISTBYID = async function (req, res) {
           commentCount: { $size: "$comments" },
         },
       },
+      {
+        $group: {
+          _id: "$postId",
+          date: { $first: "$date" },
+          time: { $first: "$time" },
+          postImage: { $first: "$postImage" },
+          postUniqueId: { $first: "$postUniqueId" },
+          postDescription: { $first: "$postDescription" },
+          likeCount: { $first: "$likeCount" },
+          commentCount: { $first: "$commentCount" },
+        },
+      },
     ]);
 
     const savedPostsCount = usersavedposts.length;
@@ -575,7 +605,18 @@ exports.getallblockedusersforadmin = async function (req, res) {
     if (req.query.searchQuery && req.query.searchQuery !== "") {
       let regex = new RegExp(req.query.searchQuery, "i");
 
-      condition.$or = [{ fullNameorCompanyName: regex }, { phone: regex }];
+      condition.$or = [
+        { fullNameorCompanyName: regex },
+        { phone: regex },
+        { email: regex },
+        { city: regex },
+        { designationorCompanytype: regex },
+        { interests: regex },
+        { userUniqueId: regex },
+        { logCreatedDate: regex },
+        { logModifiedDate: regex },
+        { blockedReason: regex },
+      ];
     }
 
     var dates = req.body.logCreatedDate;

@@ -27,4 +27,11 @@ usercommentpostRoutes.delete(
   usercomentPostsController.deletetothecommentedposts
 );
 
+//29-11-2024
+usercommentpostRoutes.post(
+  "/getcommentsbypostid",
+  verifyAdminToken,
+  usercomentPostsController.getallcommentstothepostsbyid
+);
+
 module.exports = usercommentpostRoutes;

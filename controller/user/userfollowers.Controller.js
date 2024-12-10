@@ -7,63 +7,86 @@ const userFollowersModel = require("../../model/userfollower");
 
 //const notificationUtil = require("../../utils/notificationUtills");
 
+//28-11-2024
 exports.addFollower = async function (req, res) {
   try {
     const istDateTime = DateTime.now().setZone("Asia/Kolkata");
     const logDate = istDateTime.toISO({ includeOffset: true });
     const time = istDateTime.toFormat("hh:mm a");
 
+    console.log("req.body@followings:------------------------------", req.body);
     const userId = req.userId;
     const followingId = req.body.followingId;
 
-    // Check if the user is already following the specified followingId
-    const existingFollower = await userFollowersModel.findOne({
-      followerId: userId,
-      followingId: followingId,
+    // Prevent self-following
+    //  if (userId === followingId) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: "You cannot follow yourself.",
+    //   });
+    // }
+
+    const user = await userModel.findOne({ _id: req.userId });
+
+    // Check if the user has already liked the post
+    const excistingfollower = await userFollowersModel.findOne({
+      followerId: req.userId,
+      followingId: req.body.followingId,
     });
 
-    if (existingFollower) {
-      return res.status(400).json({
-        success: false,
-        message: "You are already following this user",
+    if (excistingfollower) {
+      // If a like already exists, remove it (unlike)
+      await userFollowersModel.findOneAndDelete({
+        followerId: req.userId,
+        followingId: req.body.followingId,
       });
-    }
 
-    const user = await userModel.findOne({ _id: userId });
+      // Send unlike notification
+      // await notificationUtil.createNotification({
+      //   sendTo: "User",
+      //   userList: req.userId,
+      //   subject: "Post Unliked",
+      //   description: `You have unliked the post.`,
+      // });
 
-    // Create a new follower entry
-    const userObj = new userFollowersModel({
-      date: logDate.slice(0, 10),
-      time,
-      followingId,
-      followerId: userId,
-      followerName: user ? user.fullNameorCompanyName : "",
-      followRequest: "requested",
-      logCreatedDate: logDate,
-      logModifiedDate: logDate,
-    });
-
-    // Save the follower object
-    const savedUser = await userObj.save();
-    if (savedUser) {
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
-        message: "Follow request submitted successfully",
+        message: "Unfollowed successfully",
+      });
+    } else {
+      // If no like exists, create a new like (like action)
+      const userObj = new userFollowersModel({
+        date: logDate.slice(0, 10),
+        time,
+        followingId,
+        followerId: userId,
+        followerName: user ? user.fullNameorCompanyName : "",
+        //followRequest: "requested",
+        logCreatedDate: logDate,
+        logModifiedDate: logDate,
       });
 
-      //   // Send notification for the follow request
-      //   await notificationUtil.createNotification({
-      //     sendTo: "User",
-      //     userList: followingId,
-      //     subject: "New Follow Request",
-      //     description: `${
-      //       user ? user.fullNameorCompanyName : "A user"
-      //     } has requested to follow you.`,
-      //   });
-    } else {
-      res
-        .status(400)
-        .json({ success: false, message: "Failed to submit follow request" });
+      // Save the new like
+      const savedUser = await userObj.save();
+
+      if (savedUser) {
+        //   // Send like notification
+        //   await notificationUtil.createNotification({
+        //     sendTo: "User",
+        //     userList: req.userId,
+        //     subject: "Post Liked",
+        //     description: `Thank you for liking the post.`,
+        //   });
+
+        return res.status(200).json({
+          success: true,
+          message: "Following the user",
+        });
+      } else {
+        return res
+          .status(400)
+          .json({ success: false, message: "Please try again" });
+      }
     }
   } catch (err) {
     console.log(err);
@@ -72,48 +95,6 @@ exports.addFollower = async function (req, res) {
       .json({ success: false, message: "Something went wrong" });
   }
 };
-
-//get all follow requests
-// exports.getalluserfollowers = async function (req, res) {
-//   try {
-//     const condition = { followerId: req.userId };
-//     console.log(condition);
-
-//     // Fetch all follow requests for the user
-//     const followRequests = await userFollowersModel.find(condition).sort({
-//       logCreatedDate: -1,
-//     });
-
-//     // Fetch only the follow requests where followRequest is "requested"
-//     const requestedfollowrequests = await userFollowersModel
-//       .find({
-//         ...condition,
-//         followRequest: "requested",
-//       })
-//       .sort({ logCreatedDate: -1 });
-
-//     // Fetch only the follow requests where followRequest is "requested"
-//     const acceptedfollowrequests = await userFollowersModel
-//       .find({
-//         ...condition,
-//         followRequest: "accepted",
-//       })
-//       .sort({ logCreatedDate: -1 });
-
-//     if (followRequests) {
-//       res.status(200).json({
-//         success: true,
-//         message: "Follow Requests have been retrieved successfully",
-//         followRequests: followRequests,
-//         requestedfollowrequests: requestedfollowrequests,
-//         acceptedfollowrequests: acceptedfollowrequests,
-//       });
-//     }
-//   } catch (err) {
-//     console.log(err);
-//     res.status(400).json({ message: "Something went wrong" });
-//   }
-// };
 
 //accept follow request
 exports.acceptfollowrequest = async function (req, res) {
@@ -143,6 +124,17 @@ exports.acceptfollowrequest = async function (req, res) {
         success: true,
         message: "Follow request accepted successfully",
       });
+      // // await notificationUtil.createNotification({
+      // //   sendTo: "User",
+      // //   userList: req.body.followingId, // Send notification to the followingId
+      // //   subject: "Follow Request Accepted",
+      // //   description: `Your follow request has been accepted.`,
+      // // });
+
+      // res.status(200).json({
+      //   success: true,
+      //   message: "Follow request accepted successfully and notification sent.",
+      // });
     } else {
       res.status(400).json({
         success: false,
@@ -161,7 +153,8 @@ exports.deletefollowrequests = async function (req, res) {
     // Find and delete the follow request based on both the ID and followerId
     const upfollowrequest = await userFollowersModel.findOneAndDelete({
       _id: req.body.id,
-      followingId: req.body.followingId,
+      // followingId: req.body.followingId,
+      followerId: req.body.followerId,
     });
 
     if (upfollowrequest) {
@@ -181,7 +174,7 @@ exports.deletefollowrequests = async function (req, res) {
   }
 };
 
-//----------------------------------------------------------------------//
+//get all user ALL followers,Requested followers, Accepted followers
 exports.getalluserfollowers = async function (req, res) {
   try {
     // let condition = {};
@@ -333,6 +326,185 @@ exports.getalluserfollowers = async function (req, res) {
       allrequestsCount,
       requestedfollowersCount,
       acceptedfollowersCount,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(400).json({ message: "Something went wrong" });
+  }
+};
+
+//remove follower -- to remove the follow request
+exports.removefollowrequest = async function (req, res) {
+  try {
+    const istDateTime = DateTime.now().setZone("Asia/Kolkata");
+    const logDate = istDateTime.toISO({ includeOffset: true });
+    const time = istDateTime.toFormat("hh:mm a");
+
+    // Find and update the follow request based on both the ID and followerId
+    const upfollowrequest = await userFollowersModel.findOneAndUpdate(
+      {
+        _id: req.body.id,
+        followingId: req.body.followingId,
+      },
+      {
+        $set: {
+          followRequest: "removed",
+          logModifiedDate: logDate,
+        },
+      },
+      { new: true }
+    );
+
+    // Check if the follow request was successfully updated
+    if (upfollowrequest) {
+      res.status(200).json({
+        success: true,
+        message: "Follow request removed successfully",
+      });
+      // // await notificationUtil.createNotification({
+      // //   sendTo: "User",
+      // //   userList: req.body.followingId, // Send notification to the followingId
+      // //   subject: "Follow Request Accepted",
+      // //   description: `Your follow request has been accepted.`,
+      // // });
+
+      // res.status(200).json({
+      //   success: true,
+      //   message: "Follow request accepted successfully and notification sent.",
+      // });
+    } else {
+      res.status(400).json({
+        success: false,
+        message: "Please try again",
+      });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(400).json({ success: false, message: "Something went wrong" });
+  }
+};
+
+//request  to the follower : --------------- follow request sending
+exports.requesttotheuser = async function (req, res) {
+  try {
+    const istDateTime = DateTime.now().setZone("Asia/Kolkata");
+    const logDate = istDateTime.toISO({ includeOffset: true });
+    const time = istDateTime.toFormat("hh:mm a");
+
+    // Find and update the follow request based on both the ID and followerId
+    const upfollowrequest = await userFollowersModel.findOneAndUpdate(
+      {
+        _id: req.body.id,
+        followingId: req.body.followingId,
+      },
+      {
+        $set: {
+          followRequest: "requested",
+          logModifiedDate: logDate,
+        },
+      },
+      { new: true }
+    );
+
+    // Check if the follow request was successfully updated
+    if (upfollowrequest) {
+      res.status(200).json({
+        success: true,
+        message: "Follow request removed successfully",
+      });
+      // // await notificationUtil.createNotification({
+      // //   sendTo: "User",
+      // //   userList: req.body.followingId, // Send notification to the followingId
+      // //   subject: "Follow Request Accepted",
+      // //   description: `Your follow request has been accepted.`,
+      // // });
+
+      // res.status(200).json({
+      //   success: true,
+      //   message: "Follow request accepted successfully and notification sent.",
+      // });
+    } else {
+      res.status(400).json({
+        success: false,
+        message: "Please try again",
+      });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(400).json({ success: false, message: "Something went wrong" });
+  }
+};
+/************************************************************************************************/
+//get all follow requests
+exports.getallfollowersandmyfollowings = async function (req, res) {
+  try {
+    const userId = req.userId;
+
+    // Aggregation for users following me (followers)
+    const myfollowers = await userFollowersModel.aggregate([
+      {
+        $lookup: {
+          from: "users",
+          localField: "followerId",
+          foreignField: "_id",
+          as: "followerDetails",
+        },
+      },
+      {
+        $unwind: "$followerDetails",
+      },
+      {
+        $match: { followingId: new mongoose.Types.ObjectId(userId) },
+      },
+      {
+        $project: {
+          userObjectId: "$followerDetails._id",
+          followerName: "$followerDetails.fullNameorCompanyName",
+          followerProfilePic: "$followerDetails.profilePic",
+          isStartupOrInvestor: "$followerDetails.isStartupOrInvestor",
+          logCreatedDate: 1,
+        },
+      },
+      {
+        $sort: { logCreatedDate: -1 },
+      },
+    ]);
+
+    // Aggregation for users I am following (followings)
+    const iamfollowing = await userFollowersModel.aggregate([
+      {
+        $lookup: {
+          from: "users",
+          localField: "followingId",
+          foreignField: "_id",
+          as: "followingDetails",
+        },
+      },
+      {
+        $unwind: "$followingDetails",
+      },
+      {
+        $match: { followerId: new mongoose.Types.ObjectId(userId) },
+      },
+      {
+        $project: {
+          userObjectId: "$followingDetails._id",
+          isStartupOrInvestor: "$followingDetails.isStartupOrInvestor",
+          followingName: "$followingDetails.fullNameorCompanyName",
+          followingProfilePic: "$followingDetails.profilePic",
+          logCreatedDate: 1,
+        },
+      },
+      {
+        $sort: { logCreatedDate: -1 },
+      },
+    ]);
+
+    res.status(200).json({
+      success: true,
+      message: "Follow Requests have been retrieved successfully",
+      myfollowers: myfollowers,
+      iamfollowing: iamfollowing,
     });
   } catch (err) {
     console.log(err);

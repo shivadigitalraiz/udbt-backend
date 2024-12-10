@@ -4,7 +4,7 @@ const path = require("path");
 //const lead = require("./fcmApikey.json");
 
 // Your Firebase project ID
-const projectId = "leadinterio";
+const projectId = "udbt-f4db9";
 
 // Scopes required for FCM
 const SCOPES = ["https://www.googleapis.com/auth/firebase.messaging"];
@@ -29,7 +29,7 @@ exports.getAccessToken = async () => {
 exports.sendMessage = async (accessToken, message, callback) => {
   try {
     //const accessToken = await getAccessToken();
-    const FCM_URL = `https://fcm.googleapis.com/v1/projects/leadinterio/messages:send`;
+    const FCM_URL = `https://fcm.googleapis.com/v1/projects/udbt-f4db9/messages:send`;
 
     const headers = {
       "Content-Type": "application/json",

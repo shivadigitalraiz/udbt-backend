@@ -20,7 +20,7 @@ exports.addusersupport = async function (req, res) {
     const bookingNum =
       count > 0 ? (parseInt(data?.ticketId?.substring(6)) || 0) + 1 : 1;
     const cId = String(bookingNum).padStart(5, "0");
-    const ticketId = "LDT" + cId;
+    const ticketId = "UDBT" + cId;
 
     const userObj = new userSupportModel({
       date: logDate.slice(0, 10),

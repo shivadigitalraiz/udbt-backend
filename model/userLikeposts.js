@@ -29,4 +29,4 @@ const userPost = new mongoose.Schema({
     default: false,
   },
 });
-module.exports = mongoose.model("likePosts", userPost);
+  module.exports = mongoose.model("likePosts", userPost);

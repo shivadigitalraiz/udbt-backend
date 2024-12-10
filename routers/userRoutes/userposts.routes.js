@@ -41,4 +41,10 @@ uploadedpostsRoutes.delete(
   userUploadPosts.deleteuseruploadedposts
 );
 
+uploadedpostsRoutes.post(
+  "/getpostbyid",
+  verifyAdminToken,
+  upload_useruploadpost.none(),
+  userUploadPosts.getpostbyid
+);
 module.exports = uploadedpostsRoutes;

@@ -273,87 +273,172 @@ exports.createNotification = async function (params) {
 
       break;
 
-    //case :Investors
+    // //case :Investors
+    // case "Investors":
+    //   let InvestorscstUsers = [];
+    //   let InvestorscustToken = [];
+    //   let InvestorsallUserIds = [];
+    //   let InvestorsshoCusts = await customerModel.find();
+
+    //   if (params.userList === "All") {
+    //     // Fetch all customers
+    //     InvestorsshoCusts.forEach((item) => {
+    //       if (item.notification_bell === true) {
+    //         InvestorscstUsers.push(item._id.toString());
+    //         if (item.fcmtoken) {
+    //           InvestorscustToken.push(item.fcmtoken); // Add valid FCM tokens
+    //         }
+    //       } else {
+    //         console.log("No user with notification enabled");
+    //       }
+    //     });
+
+    //     // Assign all customer IDs to InvestorsallUserIds
+    //     InvestorsallUserIds = [...InvestorscstUsers];
+    //   } else {
+    //     // Fetch specific customers based on userList
+    //     const filteredCusts = await customerModel.find(
+    //       { _id: { $in: params.userList } },
+    //       { _id: 1, notification_bell: 1, fcmtoken: 1 }
+    //     );
+
+    //     filteredCusts.forEach((item) => {
+    //       if (item.notification_bell === true) {
+    //         InvestorscstUsers.push(item._id.toString());
+    //         if (item.fcmtoken) {
+    //           InvestorscustToken.push(item.fcmtoken); // Add valid FCM tokens
+    //         }
+    //       } else {
+    //         console.log("No user with notification enabled");
+    //       }
+    //     });
+
+    //     // Assign selected customer IDs to InvestorsallUserIds
+    //     InvestorsallUserIds = [...InvestorscstUsers];
+    //   }
+
+    //   console.log("All user IDs:", InvestorsallUserIds);
+
+    //   // Send notifications only to valid customer tokens
+    //   for (const token of InvestorscustToken) {
+    //     try {
+    //       const accessToken = await userFcmFunction.getAccessToken();
+    //       const message = {
+    //         message: {
+    //           token: token,
+    //           notification: {
+    //             title: params.subject,
+    //             body: params.description,
+    //           },
+    //         },
+    //       };
+
+    //       await userFcmFunction.sendMessage(accessToken, message);
+    //       console.log("Successfully sent notification");
+    //     } catch (error) {
+    //       console.log("Failed to send notification:", error.message);
+    //     }
+    //   }
+
+    //   // Save notification to the database
+    //   await new notificationModel({
+    //     sendTo: params.sendTo,
+    //     users: InvestorsallUserIds,
+    //     isRead: InvestorsallUserIds,
+    //     title: params.subject,
+    //     description: params.description,
+    //     logCreatedDate: logDate,
+    //     logModifiedDate: logDate,
+    //     date: logDate.slice(0, 10),
+    //     time: time,
+    //   }).save();
+
+    //   break;
+
     case "Investors":
-      let InvestorscstUsers = [];
-      let InvestorscustToken = [];
-      let InvestorsallUserIds = [];
-      let InvestorsshoCusts = await customerModel.find();
+  let InvestorscstUsers = [];
+  let InvestorscustToken = [];
+  let InvestorsallUserIds = [];
+  let InvestorsshoCusts = [];
 
-      if (params.userList === "All") {
-        // Fetch all customers
-        InvestorsshoCusts.forEach((item) => {
-          if (item.notification_bell === true) {
-            InvestorscstUsers.push(item._id.toString());
-            if (item.fcmtoken) {
-              InvestorscustToken.push(item.fcmtoken); // Add valid FCM tokens
-            }
-          } else {
-            console.log("No user with notification enabled");
+  try {
+    if (params.userList === "All") {
+      // Fetch all customers
+      InvestorsshoCusts = await customerModel.find();
+
+      InvestorsshoCusts.forEach((item) => {
+        if (item.notification_bell === true) {
+          InvestorscstUsers.push(item._id.toString());
+          if (item.fcmtoken) {
+            InvestorscustToken.push(item.fcmtoken); // Add valid FCM tokens
           }
-        });
+        }
+      });
+    } else {
+      // Fetch specific customers based on userList
+      InvestorsshoCusts = await customerModel.find(
+        { _id: { $in: params.userList } },
+        { _id: 1, notification_bell: 1, fcmtoken: 1 }
+      );
 
-        // Assign all customer IDs to InvestorsallUserIds
-        InvestorsallUserIds = [...InvestorscstUsers];
-      } else {
-        // Fetch specific customers based on userList
-        const filteredCusts = await customerModel.find(
-          { _id: { $in: params.userList } },
-          { _id: 1, notification_bell: 1, fcmtoken: 1 }
-        );
-
-        filteredCusts.forEach((item) => {
-          if (item.notification_bell === true) {
-            InvestorscstUsers.push(item._id.toString());
-            if (item.fcmtoken) {
-              InvestorscustToken.push(item.fcmtoken); // Add valid FCM tokens
-            }
-          } else {
-            console.log("No user with notification enabled");
+      InvestorsshoCusts.forEach((item) => {
+        if (item.notification_bell === true) {
+          InvestorscstUsers.push(item._id.toString());
+          if (item.fcmtoken) {
+            InvestorscustToken.push(item.fcmtoken); // Add valid FCM tokens
           }
-        });
+        }
+      });
+    }
 
-        // Assign selected customer IDs to InvestorsallUserIds
-        InvestorsallUserIds = [...InvestorscstUsers];
-      }
+    // Assign all customer IDs to InvestorsallUserIds
+    InvestorsallUserIds = [...InvestorscstUsers];
+    console.log("All user IDs:", InvestorsallUserIds);
 
-      console.log("All user IDs:", InvestorsallUserIds);
-
-      // Send notifications only to valid customer tokens
-      for (const token of InvestorscustToken) {
-        try {
-          const accessToken = await userFcmFunction.getAccessToken();
-          const message = {
-            message: {
-              token: token,
-              notification: {
-                title: params.subject,
-                body: params.description,
-              },
+    // Send notifications only to valid customer tokens
+    for (const token of InvestorscustToken) {
+      try {
+        const accessToken = await userFcmFunction.getAccessToken();
+        const message = {
+          message: {
+            token: token,
+            notification: {
+              title: params.subject,
+              body: params.description,
             },
-          };
+          },
+        };
 
-          await userFcmFunction.sendMessage(accessToken, message);
-          console.log("Successfully sent notification");
-        } catch (error) {
+        const response = await userFcmFunction.sendMessage(accessToken, message);
+        console.log("Successfully sent notification:", response);
+      } catch (error) {
+        if (error.error?.code === 404) {
+          console.log(`Invalid or expired FCM token: ${token}`);
+        } else {
           console.log("Failed to send notification:", error.message);
         }
       }
+    }
 
-      // Save notification to the database
-      new notificationModel({
-        sendTo: params.sendTo,
-        users: InvestorsallUserIds,
-        isRead: InvestorsallUserIds,
-        title: params.subject,
-        description: params.description,
-        logCreatedDate: logDate,
-        logModifiedDate: logDate,
-        date: logDate.slice(0, 10),
-        time: time,
-      }).save();
+    // Save notification to the database
+    await notificationModel.create({
+      sendTo: params.sendTo,
+      users: InvestorsallUserIds,
+      isRead: false, // Notifications are unread by default
+      title: params.subject,
+      description: params.description,
+      logCreatedDate: logDate,
+      logModifiedDate: logDate,
+      date: logDate.slice(0, 10),
+      time: time,
+    });
 
-      break;
+    console.log("Notification saved to database.");
+  } catch (error) {
+    console.error("Error processing Investors notifications:", error.message);
+  }
+  break;
+
 
     //case :Investors
     case "Startups":

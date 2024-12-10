@@ -35,4 +35,24 @@ userfollwerrequestRoutes.delete(
   userfollowRequestController.deletefollowrequests
 );
 
+//remove to the user
+userfollwerrequestRoutes.put(
+  "/removefollowrequest",
+  verifyAdminToken,
+  userfollowRequestController.removefollowrequest
+);
+
+//request the follow request
+userfollwerrequestRoutes.put(
+  "/requesttouser",
+  verifyAdminToken,
+  userfollowRequestController.requesttotheuser
+);
+
+//10-12-2024
+userfollwerrequestRoutes.post(
+  "/getmyfollwersandfollowing",
+  verifyAdminToken,
+  userfollowRequestController.getallfollowersandmyfollowings
+);
 module.exports = userfollwerrequestRoutes;

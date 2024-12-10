@@ -50,7 +50,7 @@ cron.schedule("0 */3 * * * *", () => {
   console.log("Server running on port 6300");
 });
 
-//---------------------------------- CHAT ------------------------------------------//
+//----------------------------------------- CHAT ------------------------------------------//
 const server = http.createServer(app);
 const io = require("socket.io")(server, {
   cors: {
@@ -125,6 +125,12 @@ io.on("connection", (socket) => {
     }
   });
 });
+
+//----------------------------------------- CHAT  END ------------------------------------------//
+
+// app.listen(process.env.PORT, () => {
+//   console.log(`The server is running on port ${process.env.PORT}`);
+// });
 
 // app.js main listner
 server.listen(process.env.PORT, () => {

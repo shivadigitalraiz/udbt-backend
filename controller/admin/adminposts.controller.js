@@ -3,37 +3,7 @@ const userPostsModel = require("../../model/userPosts");
 const userModel = require("../../model/user");
 const { DateTime } = require("luxon");
 const mongoose = require("mongoose");
-
-//delete posts uploaded by admin
-// exports.deleteuseruploadedpostsbyadmin = async function (req, res) {
-//   try {
-//     const istDateTime = DateTime.now().setZone("Asia/Kolkata");
-//     const logDate = istDateTime.toISO({ includeOffset: true });
-
-//     const deletedpost = await userPostsModel.findByIdAndUpdate(
-//       {
-//         _id: req.params.id,
-//       },
-//       {
-//         $set: {
-//           isdeleted: "Yes",
-//           logModifiedDate: logDate,
-//         },
-//       },
-//       {
-//         new: true,
-//       }
-//     );
-//     if (deletedpost) {
-//       res.status(200).json({ success: true, message: "Deleted successfully" });
-//     } else {
-//       res.status(400).json({ success: false, message: "Bad request" });
-//     }
-//   } catch (err) {
-//     console.log(err);
-//     res.status(400).json({ success: false, message: "Something went wrong" });
-//   }
-// };
+const notificationUtil = require("../../utils/notificationUtills");
 
 //get all posts for admin which are not deleted
 exports.getalluserpostsforadmin = async function (req, res) {
@@ -87,15 +57,51 @@ exports.getalluserpostsforadmin = async function (req, res) {
       {
         $unwind: "$userDetails",
       },
+      // {
+      //   $match: {
+      //     "userDetails.isdeleted": "No",
+      //     //  "userDetails.isStartupOrInvestor": req.body.isStartupOrInvestor,
+      //     ...(searchQuery && {
+      //       "userDetails.fullNameorCompanyName": {
+      //         $regex: searchQuery,
+      //         $options: "i",
+      //       },
+      //     }),
+      //   },
+      // },
       {
         $match: {
           "userDetails.isdeleted": "No",
-          //  "userDetails.isStartupOrInvestor": req.body.isStartupOrInvestor,
           ...(searchQuery && {
-            "userDetails.fullNameorCompanyName": {
-              $regex: searchQuery,
-              $options: "i",
-            },
+            $or: [
+              {
+                "userDetails.fullNameorCompanyName": {
+                  $regex: searchQuery,
+                  $options: "i",
+                },
+              },
+              { "userDetails.phone": { $regex: searchQuery, $options: "i" } },
+              {
+                "userDetails.userUniqueId": {
+                  $regex: searchQuery,
+                  $options: "i",
+                },
+              },
+              { postUniqueId: { $regex: searchQuery, $options: "i" } },
+              { logCreatedDate: { $regex: searchQuery, $options: "i" } },
+              {
+                "userDetails.logCreatedDate": {
+                  $regex: searchQuery,
+                  $options: "i",
+                },
+              },
+              {
+                "userDetails.isStartupOrInvestor": {
+                  $regex: searchQuery,
+                  $options: "i",
+                },
+              },
+            ],
           }),
         },
       },
@@ -217,15 +223,51 @@ exports.getalluserdeletedpostsforadmin = async function (req, res) {
       {
         $unwind: "$userDetails",
       },
+      // {
+      //   $match: {
+      //     "userDetails.isdeleted": "No",
+      //     // "userDetails.isStartupOrInvestor": req.body.isStartupOrInvestor,
+      //     ...(searchQuery && {
+      //       "userDetails.fullNameorCompanyName": {
+      //         $regex: searchQuery,
+      //         $options: "i",
+      //       },
+      //     }),
+      //   },
+      // },
       {
         $match: {
           "userDetails.isdeleted": "No",
-          // "userDetails.isStartupOrInvestor": req.body.isStartupOrInvestor,
           ...(searchQuery && {
-            "userDetails.fullNameorCompanyName": {
-              $regex: searchQuery,
-              $options: "i",
-            },
+            $or: [
+              {
+                "userDetails.fullNameorCompanyName": {
+                  $regex: searchQuery,
+                  $options: "i",
+                },
+              },
+              { "userDetails.phone": { $regex: searchQuery, $options: "i" } },
+              {
+                "userDetails.userUniqueId": {
+                  $regex: searchQuery,
+                  $options: "i",
+                },
+              },
+              {
+                "userDetails.logCreatedDate": {
+                  $regex: searchQuery,
+                  $options: "i",
+                },
+              },
+              { postUniqueId: { $regex: searchQuery, $options: "i" } },
+              { logCreatedDate: { $regex: searchQuery, $options: "i" } },
+              {
+                "userDetails.isStartupOrInvestor": {
+                  $regex: searchQuery,
+                  $options: "i",
+                },
+              },
+            ],
           }),
         },
       },
@@ -434,8 +476,6 @@ exports.deleteuseruploadedpostsbyadmin = async function (req, res) {
     res.status(400).json({ success: false, message: "Something went wrong" });
   }
 };
-
-
 
 // description: `Your post has been deleted by the admin. Details:
 //                       - Description: ${deletedpost.description}

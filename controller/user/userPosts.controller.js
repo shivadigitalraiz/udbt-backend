@@ -178,3 +178,24 @@ exports.deleteuseruploadedposts = async function (req, res) {
     res.status(400).json({ success: false, message: "Something went wrong" });
   }
 };
+
+//get byid
+exports.getpostbyid = async function (req, res) {
+  try {
+    const postDetails = await userPostsModel.findOne({ _id: req.body.id });
+    if (postDetails) {
+      res
+        .status(200)
+        .json({
+          success: true,
+          message: "Data retrived successfully",
+          postDetails,
+        });
+    } else {
+      res.status(400).json({ success: false, message: "Plase try again" });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(400).json({ success: false, message: "Something went wrong" });
+  }
+};

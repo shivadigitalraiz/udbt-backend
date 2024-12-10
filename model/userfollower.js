@@ -19,12 +19,12 @@ const savePost = new mongoose.Schema({
   followingId: {
     type: mongoose.Schema.Types.ObjectId,
   },
-  followRequest: {
-    type: String,
-    enum: ["requested", "accepted"],
-    default: "requested",
-    trim: true,
-  },
+  // followRequest: {
+  //   type: String,
+  //   enum: ["requested", "accepted", "removed"],
+  //   default: "requested",
+  //   trim: true,
+  // },
   logCreatedDate: {
     type: String,
   },

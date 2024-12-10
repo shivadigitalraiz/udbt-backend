@@ -85,6 +85,7 @@ const sendMail = async (mailOptions) => {
 //   return savedOtpObject; // Return the saved OTP document
 // }
 
+//register
 exports.userRegistration = async function (req, res) {
   try {
     console.log(req.body, "Complete Request Body");
@@ -100,25 +101,26 @@ exports.userRegistration = async function (req, res) {
     const istDateTime = DateTime.now().setZone("Asia/Kolkata");
     const logDate = istDateTime.toISO({ includeOffset: true });
 
-    const existingUser = await userModel.findOne({ phone: req.body.phone });
+    const existingUser = await userModel.findOne({ email: req.body.email });
 
-    // // User unique ID generation logic
-    // const latestUser = await userModel.findOne().sort({ userUniqueId: -1 });
-    // const bookingNum =
-    //   latestUser && latestUser.userUniqueId
-    //     ? parseInt(latestUser.userUniqueId.substring(3)) + 1
-    //     : 1;
-    // const cId = String(bookingNum).padStart(5, "0");
-    // const userUniqueId = "USR" + cId;
+    //User unique ID generation logic
+    const latestUser = await userModel.findOne().sort({ userUniqueId: -1 });
+    const bookingNum =
+      latestUser && latestUser.userUniqueId
+        ? parseInt(latestUser.userUniqueId.substring(3)) + 1
+        : 1;
+    const cId = String(bookingNum).padStart(5, "0");
+    const userUniqueId = "USR" + cId;
 
     if (existingUser) {
       console.log("Updating existing user information");
 
       const updatedUser = await userModel.findOneAndUpdate(
-        { phone: req.body.phone },
+        { email: req.body.email },
         {
           fullNameorCompanyName: req.body.fullNameorCompanyName,
           email: req.body.email,
+          userUniqueId: userUniqueId,
           phone: req.body.phone,
           password: hashedPassword,
           designationorCompanytype: req.body.designationorCompanytype,
@@ -134,8 +136,8 @@ exports.userRegistration = async function (req, res) {
           fcmtoken: req.body.fcmtoken,
           interests: req.body.interests,
           logModifiedDate: logDate,
-          status: "active",
-          // userUniqueId: userUniqueId,
+          //status: "active",
+          isdeleted: "No",
         },
         { new: true }
       );
@@ -149,7 +151,6 @@ exports.userRegistration = async function (req, res) {
         { expiresIn: process.env.ADMIN_EXPIRY_DATE }
       );
 
-      // No OTP email sent for updates
       return res.status(200).json({
         success: true,
         token,
@@ -157,18 +158,18 @@ exports.userRegistration = async function (req, res) {
       });
     }
 
-    // User unique ID generation logic
-    const latestUser = await userModel.findOne().sort({ userUniqueId: -1 });
-    const bookingNum =
-      latestUser && latestUser.userUniqueId
-        ? parseInt(latestUser.userUniqueId.substring(3)) + 1
-        : 1;
-    const cId = String(bookingNum).padStart(5, "0");
-    const userUniqueId = "USR" + cId;
+    // // User unique ID generation logic
+    // const latestUser = await userModel.findOne().sort({ userUniqueId: -1 });
+    // const bookingNum =
+    //   latestUser && latestUser.userUniqueId
+    //     ? parseInt(latestUser.userUniqueId.substring(3)) + 1
+    //     : 1;
+    // const cId = String(bookingNum).padStart(5, "0");
+    // const userUniqueId = "USR" + cId;
 
     // New user registration
     const userObj = new userModel({
-      userUniqueId: userUniqueId,
+      // userUniqueId: userUniqueId,
       fullNameorCompanyName: req.body.fullNameorCompanyName,
       email: req.body.email,
       phone: req.body.phone,
@@ -201,17 +202,7 @@ exports.userRegistration = async function (req, res) {
         { expiresIn: process.env.ADMIN_EXPIRY_DATE }
       );
 
-      const savedOtpObject = await generateOtp(userObj);
-
-      // Send email with OTP only for new user registration
-      const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: userObj.email,
-        subject: "Welcome to Our Platform",
-        text: `Hello ${userObj.fullNameorCompanyName},\n\nThank you for registering with us!\nYour OTP is ${savedOtpObject.otp}.\n\nBest regards,\nUDBT`,
-      };
-      await sendMail(mailOptions);
-
+      // No OTP email sent for new user registration
       return res.status(200).json({
         success: true,
         token,
@@ -421,10 +412,17 @@ exports.userLogin = async function (req, res) {
 
 exports.getuserProfile = async function (req, res) {
   try {
+    console.log("API Hit: /getuserProfile");
+
     console.log(
       "Received request with req.userId----------------:",
       req.userId
     );
+
+    const { page, length = 10 } = req.body;
+
+    console.log("Page:", page, "Length:", length);
+
     const userId = new mongoose.Types.ObjectId(req.userId);
 
     const userResult = await userModel.aggregate([
@@ -438,6 +436,7 @@ exports.getuserProfile = async function (req, res) {
 
     console.log("Fetched user details---------------------------------:", user);
 
+    /*
     const userUploadedposts = await userPostsModel.aggregate([
       {
         $match: {
@@ -532,6 +531,153 @@ exports.getuserProfile = async function (req, res) {
     ]);
 
     const savedPostsCount = usersavedposts.length;
+
+    */
+
+    // Build uploaded posts pipeline
+    const userUploadedpostsPipeline = [
+      {
+        $match: {
+          userId: new mongoose.Types.ObjectId(userId),
+          isdeleted: "No",
+        },
+      },
+      {
+        $lookup: {
+          from: "likeposts", // Replace with your actual likes collection name
+          localField: "_id",
+          foreignField: "postId",
+          as: "likes",
+        },
+      },
+      {
+        $lookup: {
+          from: "commentposts",
+          localField: "_id",
+          foreignField: "postId",
+          as: "comments",
+        },
+      },
+      {
+        $project: {
+          date: 1,
+          time: 1,
+          //image: 1,
+          postImage: "$image",
+          logCreatedDate: 1,
+          postUniqueId: 1,
+          description: 1,
+          likeCount: { $size: "$likes" },
+          commentCount: { $size: "$comments" },
+        },
+      },
+      { $sort: { logCreatedDate: -1 } }, // Sort by date descending
+    ];
+
+    // Step 4: Apply pagination only if `page` is provided
+    if (page !== undefined) {
+      const itemsPerPage = Number(length);
+      const skip = page * itemsPerPage;
+      pipeline.push(
+        {
+          $sort: {
+            logCreatedDate: -1,
+          },
+        },
+        { $skip: skip },
+        { $limit: itemsPerPage }
+      );
+    }
+
+    const userUploadedposts = await userPostsModel.aggregate(
+      userUploadedpostsPipeline
+    );
+
+    const uploadedPostsCount = await userPostsModel.countDocuments({
+      userId: new mongoose.Types.ObjectId(userId),
+      isdeleted: "No",
+    });
+
+    // Build saved posts pipeline
+    const usersavedpostsPipeline = [
+      {
+        $match: {
+          userId: new mongoose.Types.ObjectId(userId),
+        },
+      },
+      {
+        $lookup: {
+          from: "userposts",
+          localField: "postId",
+          foreignField: "_id",
+          as: "userpost",
+        },
+      },
+      {
+        $unwind: {
+          path: "$userpost",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $match: {
+          "userpost.isdeleted": "No",
+        },
+      },
+      {
+        $lookup: {
+          from: "likeposts",
+          localField: "postId",
+          foreignField: "postId",
+          as: "likes",
+        },
+      },
+      {
+        $lookup: {
+          from: "commentposts",
+          localField: "postId",
+          foreignField: "postId",
+          as: "comments",
+        },
+      },
+      {
+        $project: {
+          date: 1,
+          time: 1,
+          postId: 1,
+          logCreatedDate: 1,
+          postImage: "$userpost.image",
+          postUniqueId: "$userpost.postUniqueId",
+          postDescription: "$userpost.description",
+          likeCount: { $size: "$likes" },
+          commentCount: { $size: "$comments" },
+        },
+      },
+      { $sort: { logCreatedDate: -1 } }, // Sort by date descending
+    ];
+
+    // Step 4: Apply pagination only if `page` is provided
+    if (page !== undefined) {
+      const itemsPerPage = Number(length);
+      const skip = page * itemsPerPage;
+      pipeline.push(
+        {
+          $sort: {
+            logCreatedDate: -1,
+          },
+        },
+        { $skip: skip },
+        { $limit: itemsPerPage }
+      );
+    }
+
+    const usersavedposts = await savePostsModel.aggregate(
+      usersavedpostsPipeline
+    );
+
+    const savedPostsCount = await savePostsModel.countDocuments({
+      userId: new mongoose.Types.ObjectId(userId),
+    });
 
     const userlikeposts = await likedPostsModel.aggregate([
       {
@@ -705,11 +851,13 @@ exports.getuserProfile = async function (req, res) {
     res.status(400).json({ success: false, message: "Something went wrong" });
   }
 };
+
 exports.changepassword = async function (req, res) {
   try {
     const istDateTime = DateTime.now().setZone("Asia/Kolkata");
     const logDate = istDateTime.toISO({ includeOffset: true });
 
+    console.log("Request changepaswword----------------------:", req.body);
     const password = req.body.password;
     const newpassword = req.body.newpassword;
     const confirmpassword = req.body.confirmpassword;
@@ -763,6 +911,9 @@ exports.edituserProfile = async function (req, res) {
     const istDateTime = DateTime.now().setZone("Asia/Kolkata");
     const logDate = istDateTime.toISO({ includeOffset: true });
 
+    console.log("API Hit: /edituserProfile");
+
+    console.log("Request editProfile----------------------:", req.body);
     // Prepare the fields to be updated in the user profile
     const updatedFields = {
       fullNameorCompanyName: req.body.fullNameorCompanyName,
@@ -778,37 +929,35 @@ exports.edituserProfile = async function (req, res) {
 
       about: req.body.about,
       bio: req.body.bio,
-      // profilePic: req.file ? req.file.path : console.log("No Img"),
-      // investements: JSON.parse(req.body.investements),
-      // funds: JSON.parse(req.body.funds),
 
       logModifiedDate: logDate,
     };
 
-    // Update the user profile
-    const profileResult = await userModel.findOneAndUpdate(
+    const profileResult = await userModel.updateOne(
       { _id: req.userId },
       { $set: updatedFields },
-      { new: true } // Ensure the updated document is returned
+      { new: true }
     );
 
-    // Check if the profile update was successful
-    if (profileResult) {
-      // Return the success response
+    // if (profileResult) {
+    //   res.status(200).json({
+    //     success: true,
+    //     message: "Profile updated successfully",
+    //     profile: profileResult,
+    //   });
+    if (profileResult.modifiedCount > 0) {
       res.status(200).json({
         success: true,
         message: "Profile updated successfully",
-        profile: profileResult,
       });
     } else {
-      // If profile could not be updated, return a failure message
       res.status(400).json({
         success: false,
         message: "Profile could not be updated",
       });
     }
   } catch (err) {
-    console.log(err); // Log the error for debugging
+    console.log(err);
     res.status(400).json({
       success: false,
       message: "Something went wrong",
@@ -856,9 +1005,114 @@ exports.userlogout = async function (req, res) {
 
 // forgotPassword function
 
+// exports.forgotPassword = async function (req, res) {
+//   try {
+//     console.log("req.body:------------------", req.body);
+
+//     // Find the user by email and ensure the account is active
+//     const user = await userModel.findOne({
+//       email: req.body.email,
+//       status: "active",
+//     });
+
+//     // if (!user) {
+//     //   return res.status(400).json({
+//     //     success: false,
+//     //     message: "User is not registered with this email",
+//     //   });
+//     // }
+//     if (user.status !== "active") {
+//       const message =
+//         user.status === "inactive"
+//           ? "Your account is inactive. Please contact support."
+//           : "Your account has been blocked by the admin.";
+//       return res.status(400).json({
+//         success: false,
+//         message: message,
+//       });
+//     }
+
+//     // Check if an OTP already exists for the given email
+//     const existingOtp = await Otp.findOne({
+//       emailId: req.body.email,
+//       expireAt: { $gt: new Date() }, // Ensure OTP is valid and not expired
+//     });
+
+//     // If an existing valid OTP exists, return a response without generating a new OTP
+//     if (existingOtp) {
+//       return res.status(200).json({
+//         success: true,
+//         message: "An OTP is already sent to this email.",
+//         userInfo: user._id,
+//       });
+//     }
+
+//     // Generate OTP (you can implement the logic in generateOtp function or directly here)
+//     //const otpCode = Math.floor(1000 + Math.random() * 9000); // Simple OTP generation (you can replace this with your own method)
+//     const otpCode = "1234";
+//     // Save OTP and email in otpModel
+//     const otpRecord = new Otp({
+//       otp: otpCode,
+//       emailId: req.body.email, // Save the email here
+//       phone: user.phone, // Assuming user has a phone field
+//       userId: user._id, // Linking the OTP to the user
+//       expireAt: new Date(Date.now() + 15 * 60 * 1000), // OTP expires in 15 minutes
+//     });
+
+//     await otpRecord.save(); // Save the OTP record in the database
+
+//     // Setup email transporter for sending OTP
+//     const transporter = nodemailer.createTransport({
+//       service: "gmail",
+//       auth: {
+//         // user: "sandeep.digitalraiz@gmail.com",
+//         user: process.env.EMAIL_FROM,
+//         pass: process.env.EMAIL_PASSWORD,
+//       },
+//     });
+
+//     // Email options including only the OTP in the email body
+//     const mailOptions = {
+//       // from: "sandeep.digitalraiz@gmail.com",
+//       from: process.env.EMAIL_FROM,
+//       to: req.body.email,
+//       subject: "Forgot Password OTP",
+//       text: `Hello ${
+//         user.fullNameorCompanyName || "User"
+//       },\n\nYour OTP for password reset is: ${otpCode}\n\nThank you.`,
+//     };
+
+//     // Send OTP email
+//     transporter.sendMail(mailOptions, function (error, info) {
+//       if (error) {
+//         console.log(error);
+//         return res.status(500).json({
+//           success: false,
+//           message: "Error sending OTP email",
+//         });
+//       } else {
+//         console.log("Email sent: " + info.response);
+//         return res.status(200).json({
+//           success: true,
+//           message: "OTP has been sent successfully to the specified email",
+//           userInfo: user._id,
+//         });
+//       }
+//     });
+//   } catch (error) {
+//     console.log(error);
+//     return res.status(400).json({
+//       success: false,
+//       message: "Something went wrong",
+//     });
+//   }
+// };
+
 exports.forgotPassword = async function (req, res) {
   try {
     console.log("req.body:------------------", req.body);
+
+    console.log("API Hit: /forgotPassword");
 
     // Find the user by email and ensure the account is active
     const user = await userModel.findOne({
@@ -866,12 +1120,13 @@ exports.forgotPassword = async function (req, res) {
       status: "active",
     });
 
-    // if (!user) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     message: "User is not registered with this email",
-    //   });
-    // }
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "User is not registered with this email",
+      });
+    }
+
     if (user.status !== "active") {
       const message =
         user.status === "inactive"
@@ -889,7 +1144,6 @@ exports.forgotPassword = async function (req, res) {
       expireAt: { $gt: new Date() }, // Ensure OTP is valid and not expired
     });
 
-    // If an existing valid OTP exists, return a response without generating a new OTP
     if (existingOtp) {
       return res.status(200).json({
         success: true,
@@ -898,37 +1152,26 @@ exports.forgotPassword = async function (req, res) {
       });
     }
 
-    // Generate OTP (you can implement the logic in generateOtp function or directly here)
-    //const otpCode = Math.floor(1000 + Math.random() * 9000); // Simple OTP generation (you can replace this with your own method)
-    const otpCode = "1234";
-    // Save OTP and email in otpModel
-    const otpRecord = new Otp({
-      otp: otpCode,
-      emailId: req.body.email, // Save the email here
-      phone: user.phone, // Assuming user has a phone field
-      userId: user._id, // Linking the OTP to the user
-      expireAt: new Date(Date.now() + 15 * 60 * 1000), // OTP expires in 15 minutes
-    });
-
-    await otpRecord.save(); // Save the OTP record in the database
+    // Generate OTP and save it using the generateOtp function
+    const otpRecord = await generateOtp(user);
 
     // Setup email transporter for sending OTP
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: "sandeep.digitalraiz@gmail.com",
-        pass: process.env.EMAIL_PASSWORD, // Use environment variable for security
+        user: process.env.EMAIL_FROM,
+        pass: process.env.EMAIL_PASSWORD,
       },
     });
 
     // Email options including only the OTP in the email body
     const mailOptions = {
-      from: "sandeep.digitalraiz@gmail.com",
+      from: process.env.EMAIL_FROM,
       to: req.body.email,
       subject: "Forgot Password OTP",
       text: `Hello ${
         user.fullNameorCompanyName || "User"
-      },\n\nYour OTP for password reset is: ${otpCode}\n\nThank you.`,
+      },\n\nYour OTP for password reset is: ${otpRecord.otp}\n\nThank you.`,
     };
 
     // Send OTP email
@@ -1029,6 +1272,7 @@ exports.deleteAccount = async function (req, res) {
 //update api for intrests
 exports.updateinstrestsforuser = async function (req, res) {
   try {
+    console.log("req.body:--------------------------", req.body);
     const updateintrests = await userModel.updateOne(
       { _id: req.userId },
       {
@@ -1054,7 +1298,11 @@ exports.updateinstrestsforuser = async function (req, res) {
 //the below api is to resend the otp
 exports.sendOtpforemail = async function (req, res) {
   try {
+    console.log("req.body:------------------", req.body);
+
     const { email } = req.body;
+
+    console.log("API Hit: /sendOtpforemail");
 
     // Set the current date in the IST timezone
     const istDateTime = DateTime.now().setZone("Asia/Kolkata");
@@ -1098,18 +1346,20 @@ exports.sendOtpforemail = async function (req, res) {
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: "sandeep.digitalraiz@gmail.com",
+        // user: "sandeep.digitalraiz@gmail.com",
+        user: process.env.EMAIL_FROM,
         pass: process.env.EMAIL_PASSWORD, // Use environment variable for security
       },
     });
 
     const mailOptions = {
-      from: "sandeep.digitalraiz@gmail.com",
+      // from: "sandeep.digitalraiz@gmail.com",
+      from: process.env.EMAIL_FROM,
       to: email,
-      subject: "OTP for Password Reset",
+      subject: "OTP Comparision",
       text: `Hello ${
         userData.fullNameorCompanyName || "User"
-      },\n\nYour OTP for password reset is: ${otp}\n\nThank you.`,
+      },\n\nYour OTP  is: ${otp}\n\nThank you.`,
     };
 
     transporter.sendMail(mailOptions, function (error, info) {

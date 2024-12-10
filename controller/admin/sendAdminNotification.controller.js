@@ -1,7 +1,7 @@
 // importing models
 const notificationModel = require("../../model/notification");
 const { DateTime } = require("luxon");
-//const notificationUtil = require("../../utils/notificationUtills");
+const notificationUtil = require("../../utils/notificationUtills");
 
 exports.addNotification = async function (req, res) {
   try {
@@ -11,41 +11,41 @@ exports.addNotification = async function (req, res) {
     const logDate = istDateTime.toISO({ includeOffset: true });
     const time = istDateTime.toFormat("hh:mm a");
 
-    // await notificationUtil.createNotification({
-    //   // sendTo: "Vendor",
-    //   // userList: req.body.users[0].value,
-    //   // subject: "Notification",
-    //   // description: "Notification has been sent",
+    await notificationUtil.createNotification({
+      // sendTo: "Vendor",
+      // userList: req.body.users[0].value,
+      // subject: "Notification",
+      // description: "Notification has been sent",
 
-    //   sendTo: req.body.sendTo,
-    //   userList: req.body.users,
-    //   subject: req.body.title,
-    //   description: req.body.description,
-    // });
-    const notifcationObj = new notificationModel({
-      date: logDate.slice(0, 10),
-      time,
-      title: req.body.title,
       sendTo: req.body.sendTo,
+      userList: req.body.users,
+      subject: req.body.title,
       description: req.body.description,
-      users: req.body.users,
-      logCreatedDate: logDate,
-      logModifiedDate: logDate,
     });
-
-    const saveNotification = await notifcationObj.save();
-
-    if (saveNotification) {
-      res.status(200).json({ success: true, message: "Added successfully" });
-    } else {
-      res.status(400).json({ success: false, message: "Please try again" });
-    }
-
-    // //04-11-24
-    // res.status(200).json({
-    //   success: true,
-    //   message: "Notification has been added successfully",
+    // const notifcationObj = new notificationModel({
+    //   date: logDate.slice(0, 10),
+    //   time,
+    //   title: req.body.title,
+    //   sendTo: req.body.sendTo,
+    //   description: req.body.description,
+    //   users: req.body.users,
+    //   logCreatedDate: logDate,
+    //   logModifiedDate: logDate,
     // });
+
+    // const saveNotification = await notifcationObj.save();
+
+    // if (saveNotification) {
+    //   res.status(200).json({ success: true, message: "Added successfully" });
+    // } else {
+    //   res.status(400).json({ success: false, message: "Please try again" });
+    // }
+
+    //04-11-24
+    res.status(200).json({
+      success: true,
+      message: "Notification has been added successfully",
+    });
   } catch (err) {
     console.log(err);
     res.status(400).json({ status: false, message: "Something went wrong..!" });
@@ -87,7 +87,11 @@ exports.getAllNotifications = async function (req, res) {
 
     // Include search query in condition if it exists
     if (req.query.searchQuery) {
-      condition.$or = [{ title: regex }, { sendTo: regex }];
+      condition.$or = [
+        { title: regex },
+        { sendTo: regex },
+        { description: regex },
+      ];
     }
 
     // Fetch notifications
@@ -116,7 +120,7 @@ exports.deletenotification = async function (req, res) {
       res.status(200).json({ message: "Notifications have been deleted" });
     } else {
       res.status(400).json({ message: "Bad request" });
-    } 
+    }
   } catch (err) {
     console.log(err);
     res.status(400).json({ success: false, message: "Something went wrong" });

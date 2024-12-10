@@ -17,6 +17,7 @@ const user = new mongoose.Schema({
   phone: {
     type: String,
     trim: true,
+    default: "",
   },
   password: {
     type: String,
@@ -45,7 +46,7 @@ const user = new mongoose.Schema({
   //------ for investments -------- //
   investements: {
     type: String,
-    default: "",
+    //default: "",
   },
   funds: {
     type: String,
@@ -62,7 +63,7 @@ const user = new mongoose.Schema({
   },
   fcmtoken: {
     type: String,
-    trim: true, 
+    trim: true,
   },
   notification_bell: {
     type: Boolean,

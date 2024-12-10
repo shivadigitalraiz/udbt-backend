@@ -36,7 +36,7 @@ const usersupport = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ["solved", "pending", "unsloved", "leadreplacement"],
+    enum: ["solved", "pending"],
     default: "pending",
   },
   logCreatedDate: {

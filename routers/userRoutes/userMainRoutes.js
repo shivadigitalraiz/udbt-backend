@@ -15,7 +15,7 @@ const userfollwerrequestRoutes = require("./userfollowrequest.routes");
 const notificationRoutes = require("./notification.routes");
 const usersharedpostRoutes = require("./usersharedposts.routes");
 const userDocRoutes = require("./userDocs.routes");
-//const chatRoutes = require("./userChat.routes");
+const chatRoutes = require("./userChat.routes");
 
 /*************** APi's for the above **************/
 userRoute.use("/auth", authRoutes);
@@ -28,7 +28,7 @@ userRoute.use("/followrequest", userfollwerrequestRoutes);
 userRoute.use("/notification", notificationRoutes);
 userRoute.use("/sharedposts", usersharedpostRoutes);
 userRoute.use("/userdoc", userDocRoutes);
-//userRoute.use("/chat", chatRoutes);
+userRoute.use("/chat", chatRoutes);
 
 //single doc controller
 const userintrestsController = require("../../controller/user/userintrests.controller");
@@ -42,4 +42,10 @@ userRoute.post(
   userintrestsController.getcontactusandaboutus
 );
 
+//
+userRoute.post(
+  "/getmysavedposts",
+  verifyAdminToken,
+  userintrestsController.getsavedpostforme
+);
 module.exports = userRoute;
