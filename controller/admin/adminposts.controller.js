@@ -436,6 +436,7 @@ exports.getuploadedpostbyuserforadmin = async function (req, res) {
   }
 };
 
+//TO BLOCK THE POST BY ADMIN
 exports.deleteuseruploadedpostsbyadmin = async function (req, res) {
   try {
     const istDateTime = DateTime.now().setZone("Asia/Kolkata");
@@ -476,6 +477,7 @@ exports.deleteuseruploadedpostsbyadmin = async function (req, res) {
     res.status(400).json({ success: false, message: "Something went wrong" });
   }
 };
+
 
 // description: `Your post has been deleted by the admin. Details:
 //                       - Description: ${deletedpost.description}

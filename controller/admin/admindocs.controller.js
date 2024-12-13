@@ -520,6 +520,7 @@ exports.GETUSERLISTBYID = async function (req, res) {
           followerCity: "$followerDetails.city",
           followingPhone: "$followerDetails.phone",
           followinguserUniqueId: "$followerDetails.userUniqueId",
+          followergDesignation: "$followerDetails.designationorCompanytype",
           date: 1,
           time: 1,
           logCreatedDate: 1,
@@ -559,6 +560,7 @@ exports.GETUSERLISTBYID = async function (req, res) {
           followingCity: "$followingDetails.city",
           followingPhone: "$followingDetails.phone",
           followinguserUniqueId: "$followingDetails.userUniqueId",
+          followinggDesignation: "$followingDetails.designationorCompanytype",
           date: 1,
           time: 1,
           logCreatedDate: 1,
@@ -708,7 +710,7 @@ exports.getallblockedusersforadmin = async function (req, res) {
   }
 };
 
-//
+//GET ALL USERS FOR ADMIN @ FOR NOTIFICATIOS SENDING FROM ADMIN
 exports.getallusersforadmin = async function (req, res) {
   try {
     let condition = {

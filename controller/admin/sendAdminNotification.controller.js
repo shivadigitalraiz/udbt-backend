@@ -52,40 +52,12 @@ exports.addNotification = async function (req, res) {
   }
 };
 
-// // get notifications
-// exports.getAllNotifications = async function (req, res) {
-//   try {
-//     let condition = {};
-//     let regex = new RegExp(req.query.searchQuery, "i");
-//     if (req.query.searchQuery !== "") {
-//       condition = {
-//         $or: [{ title: regex }, { sendTo: regex }],
-//       };
-//     }
-//     condition.isdeleted = "No";
-//     const notifications = await notificationModel.find(condition).sort({
-//       logCreatedDate: -1,
-//     });
-//     if (notifications) {
-//       res.status(200).json({
-//         message: "Successful",
-//         notifications: notifications,
-//       });
-//     }
-//   } catch (err) {
-//     console.log(err);
-//     res.status(400).json({ success: false, message: "Something went wrong" });
-//   }
-// };
-
 // get notifications
 exports.getAllNotifications = async function (req, res) {
   try {
-    // Define the condition for fetching notifications
-    let condition = { isdeleted: "No" }; // Set isdeleted condition as default
+    let condition = { isdeleted: "No" };
     let regex = new RegExp(req.query.searchQuery, "i");
 
-    // Include search query in condition if it exists
     if (req.query.searchQuery) {
       condition.$or = [
         { title: regex },
@@ -94,15 +66,13 @@ exports.getAllNotifications = async function (req, res) {
       ];
     }
 
-    // Fetch notifications
     const notifications = await notificationModel
       .find(condition)
       .sort({ logCreatedDate: -1 });
 
-    // Return notifications or an empty array if none found
     res.status(200).json({
       message: "Successful",
-      notifications: notifications || [], // Use logical OR to return notifications or an empty array
+      notifications: notifications || [],
     });
   } catch (err) {
     console.log(err);

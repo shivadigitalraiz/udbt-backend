@@ -1,7 +1,7 @@
 // importing models
 const userModel = require("../../model/user");
 const usersupportModel = require("../../model/usersupport");
-//const notificationUtil = require("../../utils/notificationUtills");
+const notificationUtil = require("../../utils/notificationUtills");
 const { DateTime } = require("luxon");
 
 //get all the issues|| queries done by all the users
@@ -14,26 +14,6 @@ exports.getQueries = async (req, res) => {
     }
 
     const searchQuery = req.query.searchQuery || req.body.searchQuery;
-
-    // If searchQuery is provided, build the regex condition
-    // if (searchQuery) {
-    //   const regex = new RegExp(searchQuery, "i");
-
-    //   // Use $and to combine both conditions
-    //   if (condition.status) {
-    //     condition = {
-    //       $and: [
-    //         { status: condition.status }, // Include status condition
-    //         { $or: [{ "user.fullNameorCompanyName": regex }] }, // Include searchQuery condition
-    //       ],
-    //     };
-    //   } else {
-    //     // If no status is provided, only apply searchQuery
-    //     condition = {
-    //       $or: [{ "user.fullNameorCompanyName": regex }],
-    //     };
-    //   }
-    // }
 
     // If searchQuery is provided, build the regex condition
     if (searchQuery) {
@@ -56,10 +36,7 @@ exports.getQueries = async (req, res) => {
 
       if (condition.status) {
         condition = {
-          $and: [
-            { status: condition.status }, // Include status condition
-            searchCondition, // Include searchQuery condition
-          ],
+          $and: [{ status: condition.status }, searchCondition],
         };
       } else {
         // If no status is provided, only apply searchQuery
@@ -146,12 +123,12 @@ exports.upateusersstatussupport = async function (req, res) {
       console.log(upStore, "upsttttttttttore");
       res.status(200).json({ success: true, message: "Updated successfully" });
 
-      // await notificationUtil.createNotification({
-      //   sendTo: "User",
-      //   userList: upStore.userId,
-      //   subject: "Support Issue Solved",
-      //   description: `Your support issue has been solved. Please check the app for more details.`,
-      // });
+      await notificationUtil.createNotification({
+        sendTo: "User",
+        userList: upStore.userId,
+        subject: "Support Issue Solved",
+        description: `Your support issue has been solved. Please check the app for more details.`,
+      });
     } else {
       res
         .status(400)

@@ -322,7 +322,7 @@ exports.getalluploadedpostsbyall = async function (req, res) {
                     "userDetails.city": { $regex: searchQuery, $options: "i" },
                   },
                   {
-                    "userDetails.designation": {
+                    "userDetails.designationorCompanytype": {
                       $regex: searchQuery,
                       $options: "i",
                     },

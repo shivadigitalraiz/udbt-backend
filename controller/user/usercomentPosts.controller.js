@@ -59,28 +59,7 @@ exports.addCommentToThePosts = async function (req, res) {
   }
 };
 
-// exports.getallcommentedposts = async function (req, res) {
-//   try {
-//     let condition = {};
-
-//     condition.userId = req.userId;
-//     console.log(condition);
-
-//     const commentPosts = await usercommentPostsModel.find(condition).sort({
-//       logCreatedDate: -1,
-//     });
-//     if (commentPosts) {
-//       res.status(200).json({
-//         success: true,
-//         message: "Commented posts's have been retrived successfully ",
-//         commentPosts: commentPosts,
-//       });
-//     }
-//   } catch (err) {
-//     console.log(err);
-//     res.status(400).json({ message: "Something went wrong" });
-//   }
-// };
+//GET ALL
 exports.getallcommentedposts = async function (req, res) {
   try {
     const userId = req.userId;
@@ -160,7 +139,6 @@ exports.getallcommentedposts = async function (req, res) {
 };
 
 //delete
-
 exports.deletetothecommentedposts = async function (req, res) {
   try {
     const userPosts = await usercommentPostsModel.findOneAndDelete({
@@ -183,7 +161,7 @@ exports.deletetothecommentedposts = async function (req, res) {
   }
 };
 
-//29-11-2024
+//GET ALL COMMENTS BY SENDING POSTID
 exports.getallcommentstothepostsbyid = async function (req, res) {
   try {
     console.log("API Hit: /getallcommentstothepostsbyid");

@@ -113,11 +113,12 @@ exports.getDashboardata = async function (req, res) {
           valuation: 1,
           profilePic: 1,
           status: 1,
+          designationorCompanytype:1,
         },
       },
       {
         $sort: {
-          logCreatedDate: -1, // Assuming 'createdAt' is the field that stores the creation date
+          logCreatedDate: -1, 
         },
       },
       {
@@ -148,11 +149,12 @@ exports.getDashboardata = async function (req, res) {
           status: 1,
           about: 1,
           bio: 1,
+          designationorCompanytype:1,
         },
       },
       {
         $sort: {
-          logCreatedDate: -1, // Assuming 'createdAt' is the field that stores the creation date
+          logCreatedDate: -1, 
         },
       },
       {
@@ -353,7 +355,7 @@ exports.getDashboardata = async function (req, res) {
 
     return res.status(200).json({
       success: true,
-      message: "Data retrived succes sfully",
+      message: "Data retrived successfully",
       totalStartups,
       totalInvestors,
       //
