@@ -139,8 +139,8 @@ exports.getChatHistory = async (req, res) => {
 
     res.status(200).json(chatHistory);
   } catch (error) {
-    console.error("Error fetching chat history:", error);
-    res.status(500).json({ error: "Could not fetch chat history" });
+    console.log(error);
+    res.status(400).json({ error: "Could not fetch chat history" });
   }
 };
 
@@ -157,7 +157,7 @@ exports.updateReadStatus = async (req, res) => {
         $set: {
           read: true,
         },
-      },
+      }
     );
     res.status(200).json({ message: "success", details: updateStatus });
   } catch (error) {
@@ -189,7 +189,7 @@ exports.unseenCount = async (req, res) => {
           //   seen: { $first: "$read" },
         },
       },
-    ]); 
+    ]);
 
     res.status(200).json({
       message: "success",
